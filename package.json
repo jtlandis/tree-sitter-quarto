@@ -50,7 +50,7 @@
   },
   "tree-sitter": [
     {
-      "scope": "text.markdown",
+      "scope": "source.qmd",
       "path": "tree-sitter-markdown",
       "injection-regex": "^(quarto|qmd)$",
       "file-types": [
