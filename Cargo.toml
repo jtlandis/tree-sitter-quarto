@@ -1,10 +1,10 @@
 [package]
 name = "tree-sitter-quarto"
-description = "Markdown grammar for tree-sitter"
+description = "Quarto grammar for tree-sitter"
 version = "0.2.3"
 license = "MIT"
 readme = "README.md"
-keywords = ["incremental", "parsing", "tree-sitter", "markdown"]
+keywords = ["incremental", "parsing", "tree-sitter", "markdown", "quarto"]
 categories = ["parsing", "text-editors"]
 repository = "https://github.com/jtlandis/tree-sitter-quarto"
 authors = ["MDeiml", "jtlandis"]

@@ -1,5 +1,3 @@
-LANGUAGE_NAME := tree-sitter-markdown
+LANGUAGE_NAME := tree-sitter-quarto
 
-REQUIRES := tree-sitter-markdown-inline
-
-include ../common/common.mak
+include ./common/common.mak

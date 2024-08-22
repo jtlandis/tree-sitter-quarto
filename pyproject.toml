@@ -3,26 +3,24 @@ requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "tree-sitter-markdown"
-description = "Markdown grammar for tree-sitter"
+name = "tree-sitter-quarto"
+description = "Quarto grammar for tree-sitter"
 version = "0.2.3"
-keywords = ["incremental", "parsing", "tree-sitter", "markdown"]
+keywords = ["incremental", "parsing", "tree-sitter", "markdown", "quarto"]
 classifiers = [
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
   "Topic :: Software Development :: Compilers",
   "Topic :: Text Processing :: Linguistic",
-  "Typing :: Typed"
+  "Typing :: Typed",
 ]
-authors = [
-  {name = "MDeiml"}
-]
+authors = [{ name = "MDeiml" }, { name = "jtlandis" }]
 requires-python = ">=3.8"
 license.text = "MIT"
 readme = "README.md"
 
 [project.urls]
-Homepage = "https://github.com/tree-sitter-grammars/tree-sitter-markdown"
+Homepage = "https://github.com/jtlandis/tree-sitter-quarto"
 
 [project.optional-dependencies]
 core = ["tree-sitter~=0.21"]
