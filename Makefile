@@ -1,5 +1,5 @@
-all install uninstall clean:
-	$(MAKE) -C tree-sitter-markdown $@
-	$(MAKE) -C tree-sitter-markdown-inline $@
+LANGUAGE_NAME := tree-sitter-markdown
 
-.PHONY: all install uninstall clean
+REQUIRES := tree-sitter-markdown-inline
+
+include ../common/common.mak

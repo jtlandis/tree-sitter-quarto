@@ -17,9 +17,9 @@
     "binding.gyp",
     "prebuilds/**",
     "bindings/node/*",
-    "tree-sitter-*/grammar.js",
-    "tree-sitter-*/queries/*",
-    "tree-sitter-*/src/**",
+    "grammar.js",
+    "queries/*",
+    "src/**",
     "common/grammar.js",
     "common/html_entities.json"
   ],
@@ -51,13 +51,12 @@
   "tree-sitter": [
     {
       "scope": "source.qmd",
-      "path": "tree-sitter-markdown",
       "injection-regex": "^(quarto|qmd)$",
       "file-types": [
         "qmd"
       ],
-      "highlights": "tree-sitter-markdown/queries/highlights.scm",
-      "injections": "tree-sitter-markdown/queries/injections.scm",
+      "highlights": "queries/highlights.scm",
+      "injections": "queries/injections.scm",
       "external-files": [
         "common/grammar.js"
       ]

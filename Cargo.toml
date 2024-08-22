@@ -1,12 +1,12 @@
 [package]
-name = "tree-sitter-qmd"
+name = "tree-sitter-quarto"
 description = "Markdown grammar for tree-sitter"
 version = "0.2.3"
 license = "MIT"
 readme = "README.md"
 keywords = ["incremental", "parsing", "tree-sitter", "markdown"]
 categories = ["parsing", "text-editors"]
-repository = "https://github.com/tree-sitter-grammars/tree-sitter-markdown"
+repository = "https://github.com/jtlandis/tree-sitter-quarto"
 authors = ["MDeiml", "jtlandis"]
 edition = "2021"
 autoexamples = false
@@ -14,12 +14,9 @@ autoexamples = false
 build = "bindings/rust/build.rs"
 include = [
   "bindings/rust/*",
-  "tree-sitter-markdown/src/*",
-  "tree-sitter-markdown-inline/src/*",
-  "tree-sitter-markdown/grammar.js",
-  "tree-sitter-markdown-inline/grammar.js",
-  "tree-sitter-markdown/queries/*",
-  "tree-sitter-markdown-inline/queries/*",
+  "src/*",
+  "grammar.js",
+  "queries/*",
   "common/grammar.js",
   "common/html_entities.json",
 ]
