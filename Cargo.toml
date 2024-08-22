@@ -1,5 +1,5 @@
 [package]
-name = "tree-sitter-md"
+name = "tree-sitter-qmd"
 description = "Markdown grammar for tree-sitter"
 version = "0.2.3"
 license = "MIT"
@@ -7,7 +7,7 @@ readme = "README.md"
 keywords = ["incremental", "parsing", "tree-sitter", "markdown"]
 categories = ["parsing", "text-editors"]
 repository = "https://github.com/tree-sitter-grammars/tree-sitter-markdown"
-authors = ["MDeiml"]
+authors = ["MDeiml", "jtlandis"]
 edition = "2021"
 autoexamples = false
 
