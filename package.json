@@ -1,9 +1,9 @@
 {
-  "name": "@tree-sitter-grammars/tree-sitter-markdown",
-  "version": "0.2.3",
-  "description": "Markdown grammar for tree-sitter",
-  "repository": "github:tree-sitter-grammars/tree-sitter-markdown",
-  "author": "MDeiml (https://github.com/MDeiml)",
+  "name": "@jtlandis/tree-sitter-quarto",
+  "version": "0.0.3",
+  "description": "quarto grammar for tree-sitter",
+  "repository": "github:jtlandis/tree-sitter-quarto",
+  "author": "jtlandis (https://github.com/jtlandis)",
   "license": "MIT",
   "main": "bindings/node",
   "types": "bindings/node",
@@ -52,9 +52,9 @@
     {
       "scope": "text.markdown",
       "path": "tree-sitter-markdown",
-      "injection-regex": "^(markdown|md)$",
+      "injection-regex": "^(quarto|qmd)$",
       "file-types": [
-        "md"
+        "qmd"
       ],
       "highlights": "tree-sitter-markdown/queries/highlights.scm",
       "injections": "tree-sitter-markdown/queries/injections.scm",
