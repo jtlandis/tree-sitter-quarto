@@ -1,0 +1,36 @@
+{
+  "grammars": [
+    {
+      "name": "quarto",
+      "camelcase": "Quarto",
+      "title": "Quarto",
+      "scope": "source.qmd",
+      "file-types": ["qmd"],
+      "injection-regex": "^quarto$",
+      "class-name": "TreeSitterQuarto"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "MIT",
+    "description": "Quarto markdown format",
+    "authors": [
+      {
+        "name": "jtlandis",
+        "email": "jtlandis314@gmail.com"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/jtlandis/tree-sitter-quarto"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": false,
+    "node": true,
+    "python": true,
+    "rust": true,
+    "swift": true,
+    "zig": false
+  }
+}
