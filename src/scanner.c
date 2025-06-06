@@ -1292,10 +1292,11 @@ enum TokenType {
 
 
 
-// typedef struct {
-//   Pos pos;
-//   ParseResultArray results; // State to track if we're inside an emphasis block
-// } ScannerState;
+typedef struct {
+   bool foo;
+  // Pos pos;
+  // ParseResultArray results; // State to track if we're inside an emphasis block
+} ScannerState;
 
 // static void print_scanner_state(const ScannerState *state) {
 //     // fprintf(stderr, "ScannerState {\n  pos: ");
@@ -1321,29 +1322,30 @@ enum TokenType {
 // }
 
 
-// void *tree_sitter_quarto_external_scanner_create() {
+void *tree_sitter_quarto_external_scanner_create() {
 //   fprintf(stderr, "attempting to create scanner... ");
-//   ScannerState *state = (ScannerState *)malloc(sizeof(ScannerState));
+  ScannerState *state = (ScannerState *)malloc(sizeof(ScannerState));
+  state->foo = true;
 //   state->pos = new_position(0, 0);
 //   array_init(&state->results); // Initialize the state
 //   fprintf(stderr, "returning scanner\n");
-//   return state;
-// }
+  return state;
+}
 
-// void tree_sitter_quarto_external_scanner_destroy(void *payload) {
+void tree_sitter_quarto_external_scanner_destroy(void *payload) {
 //   fprintf(stderr, "attempting to destroy scanner... ");
-//   ScannerState *state = (ScannerState *)payload;
+  ScannerState *state = (ScannerState *)payload;
 //   array_delete(&state->results); // Free the heap memory used by the array
-//   free(payload); // Free the allocated state
+  free(payload); // Free the allocated state
 //   fprintf(stderr, "freeing memory and exiting\n");
-// }
+}
 
-// unsigned tree_sitter_quarto_external_scanner_serialize(void *payload, char *buffer) {
+unsigned tree_sitter_quarto_external_scanner_serialize(void *payload, char *buffer) {
 //   fprintf(stderr, "attempting to serialize scanner... ");
-//   ScannerState *state = (ScannerState *)payload;
+  ScannerState *state = (ScannerState *)payload;
 //   size_t offset = 0;
 //   // get the position
-//   memcpy(buffer + offset, &state->pos.row, sizeof(uint32_t));
+  memcpy(buffer, &state->foo, 1);
 //   offset += sizeof(uint32_t);
 //   memcpy(buffer + offset, &state->pos.col, sizeof(uint32_t));
 //   offset += sizeof(uint32_t);
@@ -1358,24 +1360,24 @@ enum TokenType {
 //       offset += sizeof(ParseResult);
 //   }
 //   fprintf(stderr, "%zu bytes written... \n", offset);
-//   return offset;
-// }
+  return 1;
+}
 
-// void tree_sitter_quarto_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
+void tree_sitter_quarto_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
 //     fprintf(stderr, "attempting to deserialize scanner... \n");
-//     if (!payload || !buffer) {
-//         fprintf(stderr, "Null pointer in deserialize!\n");
-//         return;
-//     }
+    if (!payload || !buffer) {
+        // fprintf(stderr, "Null pointer in deserialize!\n");
+        return;
+    }
 //     if (length < sizeof(uint32_t)) {
 //         fprintf(stderr, "Buffer too small in deserialize!\n");
 //         return;
 //     }
-//     ScannerState *state = (ScannerState *)payload;
+    ScannerState *state = (ScannerState *)payload;
 //     size_t offset = 0;
 
 //     fprintf(stderr, "writing row bits... ");
-//     memcpy(&state->pos.row, buffer + offset, sizeof(uint32_t));
+    memcpy(&state->foo, buffer , 1);
 //     offset += sizeof(uint32_t);
 //     fprintf(stderr, "writing col bits... ");
 //     memcpy(&state->pos.col, buffer + offset, sizeof(uint32_t));
@@ -1392,14 +1394,15 @@ enum TokenType {
 //     array_reserve(&state->results, arr_size);
 //     state->results.size = arr_size;
 
-//     fprintf(stderr, "attempting to pull buffer info of %i elements... ", arr_size);
+    // fprintf(stderr, "attempting to pull buffer info of %i elements... ", arr_size);
 //     // Deserialize each ParseResult
 //     for (uint32_t i = 0; i < arr_size; i++) {
 //       memcpy(&state->results.contents[i], buffer + offset, sizeof(ParseResult));
 //       offset += sizeof(ParseResult);
 //     }
 //     fprintf(stderr, "exiting from deserializing function... \n");
-// }
+    return;
+}
 
 
 
@@ -1516,8 +1519,10 @@ enum TokenType {
 
 // }
 
-// bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
-
+bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
+    ScannerState *state = (ScannerState *)payload;
+    return false;
+}
 
 //   ScannerState *state = (ScannerState *)payload;
 //   print_scanner_state(state);
