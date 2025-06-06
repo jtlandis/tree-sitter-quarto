@@ -1340,7 +1340,7 @@ void tree_sitter_quarto_external_scanner_destroy(void *payload) {
 }
 
 unsigned tree_sitter_quarto_external_scanner_serialize(void *payload, char *buffer) {
-//   fprintf(stderr, "attempting to serialize scanner... ");
+
   ScannerState *state = (ScannerState *)payload;
   // return 0;
   size_t offset = 0;
@@ -1364,7 +1364,7 @@ unsigned tree_sitter_quarto_external_scanner_serialize(void *payload, char *buff
 }
 
 void tree_sitter_quarto_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
-//     fprintf(stderr, "attempting to deserialize scanner... \n");
+
     if (!payload || !buffer) {
         // fprintf(stderr, "Null pointer in deserialize!\n");
         return;

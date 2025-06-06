@@ -1,52 +1,56 @@
 ;From nvim-treesitter/nvim-treesitter
-(atx_heading (inline) @text.title)
-(setext_heading (paragraph) @text.title)
+;
 
-[
-  (atx_h1_marker)
-  (atx_h2_marker)
-  (atx_h3_marker)
-  (atx_h4_marker)
-  (atx_h5_marker)
-  (atx_h6_marker)
-  (setext_h1_underline)
-  (setext_h2_underline)
-] @punctuation.special
+(heading ) @text.title
 
-[
-  (link_title)
-  (indented_code_block)
-  (fenced_code_block)
-] @text.literal
+; (atx_heading (inline) @text.title)
+; (setext_heading (paragraph) @text.title)
 
-[
-  (fenced_code_block_delimiter)
-] @punctuation.delimiter
+; [
+;   (atx_h1_marker)
+;   (atx_h2_marker)
+;   (atx_h3_marker)
+;   (atx_h4_marker)
+;   (atx_h5_marker)
+;   (atx_h6_marker)
+;   (setext_h1_underline)
+;   (setext_h2_underline)
+; ] @punctuation.special
 
-(code_fence_content) @none
+; [
+;   (link_title)
+;   (indented_code_block)
+;   (fenced_code_block)
+; ] @text.literal
 
-[
-  (link_destination)
-] @text.uri
+; [
+;   (fenced_code_block_delimiter)
+; ] @punctuation.delimiter
 
-[
-  (link_label)
-] @text.reference
+; (code_fence_content) @none
 
-[
-  (list_marker_plus)
-  (list_marker_minus)
-  (list_marker_star)
-  (list_marker_dot)
-  (list_marker_parenthesis)
-  (thematic_break)
-] @punctuation.special
+; [
+;   (link_destination)
+; ] @text.uri
 
-[
-  (block_continuation)
-  (block_quote_marker)
-] @punctuation.special
+; [
+;   (link_label)
+; ] @text.reference
 
-[
-  (backslash_escape)
-] @string.escape
+; [
+;   (list_marker_plus)
+;   (list_marker_minus)
+;   (list_marker_star)
+;   (list_marker_dot)
+;   (list_marker_parenthesis)
+;   (thematic_break)
+; ] @punctuation.special
+
+; [
+;   (block_continuation)
+;   (block_quote_marker)
+; ] @punctuation.special
+
+; [
+;   (backslash_escape)
+; ] @string.escape

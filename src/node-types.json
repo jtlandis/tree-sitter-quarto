@@ -109,10 +109,6 @@
           "named": true
         },
         {
-          "type": "line_break",
-          "named": true
-        },
-        {
           "type": "line_end",
           "named": true
         },
@@ -149,10 +145,6 @@
       "types": [
         {
           "type": "emph",
-          "named": true
-        },
-        {
-          "type": "line_break",
           "named": true
         },
         {
@@ -195,10 +187,6 @@
           "named": true
         },
         {
-          "type": "line_break",
-          "named": true
-        },
-        {
           "type": "line_end",
           "named": true
         },
@@ -235,10 +223,6 @@
       "types": [
         {
           "type": "emph",
-          "named": true
-        },
-        {
-          "type": "line_break",
           "named": true
         },
         {
@@ -281,10 +265,6 @@
           "named": true
         },
         {
-          "type": "line_break",
-          "named": true
-        },
-        {
           "type": "line_end",
           "named": true
         },
@@ -321,10 +301,6 @@
       "types": [
         {
           "type": "emph",
-          "named": true
-        },
-        {
-          "type": "line_break",
           "named": true
         },
         {
