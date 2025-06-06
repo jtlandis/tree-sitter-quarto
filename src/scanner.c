@@ -1373,7 +1373,7 @@ void tree_sitter_quarto_external_scanner_deserialize(void *payload, const char *
         // fprintf(stderr, "Buffer too small in deserialize!\n");
         return;
     }
-    return;
+    // return;
     ScannerState *state = (ScannerState *)payload;
     size_t offset = 0;
 
