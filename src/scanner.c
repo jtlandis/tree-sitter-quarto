@@ -1342,7 +1342,7 @@ void tree_sitter_quarto_external_scanner_destroy(void *payload) {
 unsigned tree_sitter_quarto_external_scanner_serialize(void *payload, char *buffer) {
 //   fprintf(stderr, "attempting to serialize scanner... ");
   ScannerState *state = (ScannerState *)payload;
-  return 0;
+  // return 0;
   size_t offset = 0;
   // get the position
   memcpy(buffer + offset, &state->pos.row, sizeof(uint32_t));
