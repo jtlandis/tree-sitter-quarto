@@ -1523,10 +1523,10 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
 bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
 
   ScannerState *state = (ScannerState *)payload;
-  print_scanner_state(state);
+  // print_scanner_state(state);
   // fprintf(stderr, "scanner invoked before: %c - is alpha: %i\n",
       // lexer->lookahead, isalnum((int)lexer->lookahead));
-  print_valid_symbols(valid_symbols);
+  // print_valid_symbols(valid_symbols);
   if (valid_symbols[ERROR]) {
       // fprintf(stderr, "ERROR is a valid symbol. do not handle\n");
       // lexer->mark_end(lexer);
@@ -1610,7 +1610,7 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       // at the same time...
       Pos possible_pos = wrapper.curr_pos;
       // fprintf(stderr, "lex is at: ");
-      print_pos(&possible_pos);
+      // print_pos(&possible_pos);
       // fprintf(stderr, "\n");
       if (valid_symbols[EMPHASIS_STAR_END]) {
           size_t index = stack_find(&state->results, &possible_pos, EMPHASIS_STAR, true);
@@ -1717,7 +1717,7 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       // at the same time...
       Pos possible_pos = wrapper.curr_pos;
       // fprintf(stderr, "lex is at: ");
-      print_pos(&possible_pos);
+      // print_pos(&possible_pos);
       // fprintf(stderr, "\n");
       if (valid_symbols[EMPHASIS_UNDER_END]) {
           size_t index = stack_find(&state->results, &possible_pos, EMPHASIS_UNDER, true);
