@@ -25,14 +25,14 @@ enum TokenType {
   ERROR, //General Emphasis
 };
 
-// enum ParseToken {
-//     NONE,
-//     DO_NOT_PARSE,
-//     EMPHASIS_STAR,
-//     EMPHASIS_UNDER,
-//     STRONG_STAR,
-//     STRONG_UNDER,
-// };
+enum ParseToken {
+    NONE,
+    DO_NOT_PARSE,
+    EMPHASIS_STAR,
+    EMPHASIS_UNDER,
+    STRONG_STAR,
+    STRONG_UNDER,
+};
 
 
 
@@ -48,15 +48,15 @@ enum TokenType {
 //   uint32_t col;
 // } WithinRange;
 
-// typedef struct Pos {
-//     uint32_t row;
-//     uint32_t col;
-// } Pos;
+typedef struct Pos {
+    uint32_t row;
+    uint32_t col;
+} Pos;
 
-// typedef struct Range {
-//     Pos start;
-//     Pos end;
-// } Range;
+typedef struct Range {
+    Pos start;
+    Pos end;
+} Range;
 
 // enum RangeType {
 //     DISJOINT_LESS,
@@ -166,12 +166,12 @@ enum TokenType {
 // }
 
 
-// static Pos new_position(uint32_t row, uint32_t col) {
-//     Pos obj;
-//     obj.row = row;
-//     obj.col = col;
-//     return obj;
-// }
+static Pos new_position(uint32_t row, uint32_t col) {
+    Pos obj;
+    obj.row = row;
+    obj.col = col;
+    return obj;
+}
 
 // static bool pos_eq(Pos *x, Pos *y) {
 //     return (x->row == y->row) && (x->col == y->col);
@@ -233,30 +233,30 @@ enum TokenType {
 //     return range;
 // }
 
-// typedef struct ParseResult {
-//     bool success;
-//     uint32_t length;
-//     Range range;
-//     enum ParseToken token;
-// } ParseResult;
+typedef struct ParseResult {
+    bool success;
+    uint32_t length;
+    Range range;
+    enum ParseToken token;
+} ParseResult;
 
-// static Range new_range(Pos start, Pos end) {
-//     Range obj;
-//     obj.start = start;
-//     obj.end = end;
-//     return obj;
-// }
+static Range new_range(Pos start, Pos end) {
+    Range obj;
+    obj.start = start;
+    obj.end = end;
+    return obj;
+}
 
-// static ParseResult new_parse_result() {
-//     ParseResult obj;
-//     obj.success = false;
-//     obj.length = 0;
-//     obj.range = new_range(new_position(0, 0), new_position(0, 0));
-//     obj.token = NONE;
-//     return obj;
-// }
+static ParseResult new_parse_result() {
+    ParseResult obj;
+    obj.success = false;
+    obj.length = 0;
+    obj.range = new_range(new_position(0, 0), new_position(0, 0));
+    obj.token = NONE;
+    return obj;
+}
 
-// typedef Array(ParseResult) ParseResultArray;
+typedef Array(ParseResult) ParseResultArray;
 // typedef Array(uint32_t) IndexArray;
 
 // static bool pos_within_range(Pos *x, Range *y) {
@@ -1294,8 +1294,8 @@ enum TokenType {
 
 typedef struct {
    bool foo;
-  // Pos pos;
-  // ParseResultArray results; // State to track if we're inside an emphasis block
+  Pos pos;
+  ParseResultArray results; // State to track if we're inside an emphasis block
 } ScannerState;
 
 // static void print_scanner_state(const ScannerState *state) {
@@ -1325,9 +1325,8 @@ typedef struct {
 void *tree_sitter_quarto_external_scanner_create() {
 //   fprintf(stderr, "attempting to create scanner... ");
   ScannerState *state = (ScannerState *)malloc(sizeof(ScannerState));
-  state->foo = true;
-//   state->pos = new_position(0, 0);
-//   array_init(&state->results); // Initialize the state
+  state->pos = new_position(0, 0);
+  array_init(&state->results); // Initialize the state
 //   fprintf(stderr, "returning scanner\n");
   return state;
 }
@@ -1343,24 +1342,24 @@ void tree_sitter_quarto_external_scanner_destroy(void *payload) {
 unsigned tree_sitter_quarto_external_scanner_serialize(void *payload, char *buffer) {
 //   fprintf(stderr, "attempting to serialize scanner... ");
   ScannerState *state = (ScannerState *)payload;
-//   size_t offset = 0;
-//   // get the position
-  memcpy(buffer, &state->foo, 1);
-//   offset += sizeof(uint32_t);
-//   memcpy(buffer + offset, &state->pos.col, sizeof(uint32_t));
-//   offset += sizeof(uint32_t);
-//   // Serialize results array size
-//   memcpy(buffer + offset, &state->results.size, sizeof(uint32_t));
-//   offset += sizeof(uint32_t);
+  size_t offset = 0;
+  // get the position
+  memcpy(buffer + offset, &state->pos.row, sizeof(uint32_t));
+  offset += sizeof(uint32_t);
+  memcpy(buffer + offset, &state->pos.col, sizeof(uint32_t));
+  offset += sizeof(uint32_t);
+  // Serialize results array size
+  memcpy(buffer + offset, &state->results.size, sizeof(uint32_t));
+  offset += sizeof(uint32_t);
 
-//   // Serialize each ParseResult
-//   for (uint32_t i = 0; i < state->results.size; i++) {
-//       ParseResult *res = &state->results.contents[i];
-//       memcpy(buffer + offset, res, sizeof(ParseResult));
-//       offset += sizeof(ParseResult);
-//   }
+  // Serialize each ParseResult
+  for (uint32_t i = 0; i < state->results.size; i++) {
+      ParseResult *res = &state->results.contents[i];
+      memcpy(buffer + offset, res, sizeof(ParseResult));
+      offset += sizeof(ParseResult);
+  }
 //   fprintf(stderr, "%zu bytes written... \n", offset);
-  return 1;
+  return offset;
 }
 
 void tree_sitter_quarto_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
@@ -1369,39 +1368,39 @@ void tree_sitter_quarto_external_scanner_deserialize(void *payload, const char *
         // fprintf(stderr, "Null pointer in deserialize!\n");
         return;
     }
-//     if (length < sizeof(uint32_t)) {
-//         fprintf(stderr, "Buffer too small in deserialize!\n");
-//         return;
-//     }
+    if (length < sizeof(uint32_t)) {
+        // fprintf(stderr, "Buffer too small in deserialize!\n");
+        return;
+    }
     ScannerState *state = (ScannerState *)payload;
-//     size_t offset = 0;
+    size_t offset = 0;
 
 //     fprintf(stderr, "writing row bits... ");
-    memcpy(&state->foo, buffer , 1);
-//     offset += sizeof(uint32_t);
-//     fprintf(stderr, "writing col bits... ");
-//     memcpy(&state->pos.col, buffer + offset, sizeof(uint32_t));
-//     offset += sizeof(uint32_t);
+    memcpy(&state->pos.row, buffer + offset, sizeof(uint32_t));
+    offset += sizeof(uint32_t);
+    fprintf(stderr, "writing col bits... ");
+    memcpy(&state->pos.col, buffer + offset, sizeof(uint32_t));
+    offset += sizeof(uint32_t);
 
 //     fprintf(stderr, "writing array size bits... ");
-//     // Deserialize results array size
-//     uint32_t arr_size = 0;
-//     memcpy(&arr_size, buffer + offset, sizeof(uint32_t));
-//     offset += sizeof(uint32_t);
+    // Deserialize results array size
+    uint32_t arr_size = 0;
+    memcpy(&arr_size, buffer + offset, sizeof(uint32_t));
+    offset += sizeof(uint32_t);
 
 //     fprintf(stderr, "reserving array size... ");
-//     array_clear(&state->results);
-//     array_reserve(&state->results, arr_size);
-//     state->results.size = arr_size;
+    array_clear(&state->results);
+    array_reserve(&state->results, arr_size);
+    state->results.size = arr_size;
 
     // fprintf(stderr, "attempting to pull buffer info of %i elements... ", arr_size);
-//     // Deserialize each ParseResult
-//     for (uint32_t i = 0; i < arr_size; i++) {
-//       memcpy(&state->results.contents[i], buffer + offset, sizeof(ParseResult));
-//       offset += sizeof(ParseResult);
-//     }
+    // Deserialize each ParseResult
+    for (uint32_t i = 0; i < arr_size; i++) {
+      memcpy(&state->results.contents[i], buffer + offset, sizeof(ParseResult));
+      offset += sizeof(ParseResult);
+    }
 //     fprintf(stderr, "exiting from deserializing function... \n");
-    return;
+    // return;
 }
 
 
