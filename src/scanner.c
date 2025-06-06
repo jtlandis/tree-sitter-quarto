@@ -1342,6 +1342,7 @@ void tree_sitter_quarto_external_scanner_destroy(void *payload) {
 unsigned tree_sitter_quarto_external_scanner_serialize(void *payload, char *buffer) {
 //   fprintf(stderr, "attempting to serialize scanner... ");
   ScannerState *state = (ScannerState *)payload;
+  return 0;
   size_t offset = 0;
   // get the position
   memcpy(buffer + offset, &state->pos.row, sizeof(uint32_t));
@@ -1372,13 +1373,14 @@ void tree_sitter_quarto_external_scanner_deserialize(void *payload, const char *
         // fprintf(stderr, "Buffer too small in deserialize!\n");
         return;
     }
+    return;
     ScannerState *state = (ScannerState *)payload;
     size_t offset = 0;
 
 //     fprintf(stderr, "writing row bits... ");
     memcpy(&state->pos.row, buffer + offset, sizeof(uint32_t));
     offset += sizeof(uint32_t);
-    fprintf(stderr, "writing col bits... ");
+    // fprintf(stderr, "writing col bits... ");
     memcpy(&state->pos.col, buffer + offset, sizeof(uint32_t));
     offset += sizeof(uint32_t);
 
