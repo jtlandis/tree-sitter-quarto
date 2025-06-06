@@ -1,0 +1,228 @@
+====================
+simple 3 stars
+====================
+***some text***
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (strong
+        (strong_start)
+          (emph
+            (emph_start)
+            (word)
+            (word)
+            (emph_end))
+        (strong_end))
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+
+====================
+inner emph lag 3 stars
+====================
+**some *text***
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (strong
+        (strong_start)
+          (word)
+          (emph
+            (emph_start)
+            (word)
+            (emph_end))
+        (strong_end))
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+
+====================
+inner strong lag 3 stars
+:skip
+====================
+*some **text***
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (emph
+        (emph_start)
+          (word)
+          (strong
+            (strong_start)
+            (word)
+            (strong_end))
+        (emph_end))
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+====================
+inner emph lead 3 stars
+====================
+***some* text**
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (strong
+        (strong_start)
+          (emph
+            (emph_start)
+            (word)
+            (emph_end))
+          (word)
+        (strong_end))
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+
+====================
+inner strong lead 3 stars
+====================
+***some** text*
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (emph
+        (emph_start)
+          (strong
+            (strong_start)
+            (word)
+            (strong_end))
+          (word)
+        (emph_end))
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+
+
+====================
+simple 3 underscores
+====================
+___some text___
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (strong
+        (strong_start)
+          (emph
+            (emph_start)
+            (word)
+            (word)
+            (emph_end))
+        (strong_end))
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+
+====================
+inner emph lag 3 underscores
+====================
+__some _text___
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (strong
+        (strong_start)
+          (word)
+          (emph
+            (emph_start)
+            (word)
+            (emph_end))
+        (strong_end))
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+
+====================
+inner strong lag 3 underscores
+====================
+_some __text___
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (emph
+        (emph_start)
+          (word)
+          (strong
+            (strong_start)
+            (word)
+            (strong_end))
+        (emph_end))
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+====================
+inner emph lead 3 underscores
+====================
+___some_ text__
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (strong
+        (strong_start)
+          (emph
+            (emph_start)
+            (word)
+            (emph_end))
+          (word)
+        (strong_end))
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+
+====================
+inner strong lead 3 underscores
+====================
+___some__ text_
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (emph
+        (emph_start)
+          (strong
+            (strong_start)
+            (word)
+            (strong_end))
+          (word)
+        (emph_end))
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))

@@ -1,0 +1,37 @@
+====================
+simple strong star
+====================
+**some text**
+
+-----------
+
+(source_file
+  (content
+    (paragraph
+      (strong
+        (strong_start)
+        (word)
+        (word)
+        (strong_end))
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+==========================
+simple strong underscore
+==========================
+__some text__
+
+--------
+
+(source_file
+  (content
+    (paragraph
+      (strong
+        (strong_start)
+        (word)
+        (word)
+        (strong_end))
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))

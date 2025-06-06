@@ -1,0 +1,428 @@
+==============
+simple emphasis
+=============
+_some_ text
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (emph
+        (emph_start)
+        (word)
+        (emph_end))
+      (word)
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+=====
+under word 2 under space word -> invalid
+=====
+_some__ text
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (literal)
+      (word)
+      (symbols)
+      (symbols)
+      (word)
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+
+======
+under word under star space word -> valid
+======
+_some_* text
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (emph
+        (emph_start)
+        (word)
+        (emph_end))
+      (symbols)
+      (word)
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+====
+under word 3 under space word
+====
+_some___ text
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (emph
+        (emph_start)
+        (word)
+        (emph_end))
+      (literal)
+      (symbols)
+      (word)
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+====
+under word 4 under space word
+====
+_some____ text
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (emph
+        (emph_start)
+        (word)
+        (emph_end))
+      (literal)
+      (symbols)
+      (symbols)
+      (word)
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+====
+under word space under space word
+====
+_some _ text
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (emph
+        (emph_start)
+        (word)
+        (emph_end))
+      (word)
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+====
+under word space 2 under space word -> invalid
+====
+_some __ text
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (literal)
+      (word)
+      (symbols)
+      (symbols)
+      (word)
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+====
+under word space 3 under space word
+====
+_some ___ text
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (emph
+        (emph_start)
+        (word)
+        (emph_end))
+      (literal)
+      (symbols)
+      (word)
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+====
+under word space 4 under space word
+====
+_some ____ text
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (emph
+        (emph_start)
+        (word)
+        (emph_end))
+      (literal)
+      (symbols)
+      (symbols)
+      (word)
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+====
+under word space under word -> invalid
+====
+_some _text
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (literal)
+      (word)
+      (literal)
+      (word)
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+====
+under word space 2 under word  -> invalid
+====
+_some __text
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (literal)
+      (word)
+      (literal)
+      (word)
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+====
+under word space 3 under word -> invalid
+====
+_some ___text
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (literal)
+      (word)
+      (literal)
+      (symbols)
+      (word)
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+====
+under word under word under -> emph
+====
+_some_text_
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (emph
+        (emph_start)
+        (word)
+        (literal)
+        (word)
+        (emph_end))
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+=====
+under word 2 under word under -> invalid
+=====
+_some__text_
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (literal)
+      (word)
+      (literal)
+      (word)
+      (literal)
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+====
+under word 3 under word under
+====
+_some___text_
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (literal)
+      (word)
+      (literal)
+      (emph
+        (emph_start)
+        (word)
+        (emph_end))
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+====
+under word 4 under word under
+====
+_some____text_
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (emph
+        (emph_start)
+        (word)
+        (emph_end))
+      (literal)
+      (literal)
+      (word)
+      (literal)
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+====
+under word 5 under word under
+====
+_some_____text_
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (emph
+        (emph_start)
+        (word)
+        (emph_end))
+      (literal)
+      (literal)
+      (emph
+        (emph_start)
+        (word)
+        (emph_end))
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+
+
+====
+under word under word 2 under
+====
+_some_text__
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (literal)
+      (word)
+      (literal)
+      (word)
+      (symbols)
+      (symbols)
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+====
+under word 2 under word 2 under
+====
+_some__text__
+
+---
+(source_file
+  (content
+    (paragraph
+      (literal)
+      (word)
+      (strong
+        (strong_start)
+        (word)
+        (strong_end))
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+====
+under word 3 under word 2 under
+====
+_some___text__
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (literal)
+      (word)
+      (literal)
+      (symbols)
+      (word)
+      (symbols)
+      (symbols)
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
+
+====
+under word 4 under word 2 under
+====
+_some____text__
+
+---
+
+(source_file
+  (content
+    (paragraph
+      (emph
+        (emph_start)
+        (word)
+        (emph_end))
+      (literal)
+      (strong
+        (strong_start)
+        (word)
+        (strong_end))
+      (line_end)
+      (paragraph_end
+        (MISSING line_end)))))
