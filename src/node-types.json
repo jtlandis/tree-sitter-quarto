@@ -486,6 +486,10 @@
         {
           "type": "heading",
           "named": true
+        },
+        {
+          "type": "line_end",
+          "named": true
         }
       ]
     }
@@ -503,19 +507,15 @@
           "named": true
         },
         {
-          "type": "line_break",
-          "named": true
-        },
-        {
-          "type": "line_end",
-          "named": true
-        },
-        {
           "type": "literal",
           "named": true
         },
         {
           "type": "puncuation",
+          "named": true
+        },
+        {
+          "type": "strong",
           "named": true
         },
         {

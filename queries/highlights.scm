@@ -3,6 +3,10 @@
 
 (heading ) @text.title
 
+(emph) @emphasis
+
+(strong) @emphasis.strong
+
 ; (atx_heading (inline) @text.title)
 ; (setext_heading (paragraph) @text.title)
 

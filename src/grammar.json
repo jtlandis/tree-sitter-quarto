@@ -3,11 +3,23 @@
   "name": "quarto",
   "rules": {
     "source_file": {
-      "type": "REPEAT",
-      "content": {
-        "type": "SYMBOL",
-        "name": "_section"
-      }
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SYMBOL",
+            "name": "line_end"
+          }
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_section"
+          }
+        }
+      ]
     },
     "comment": {
       "type": "TOKEN",
@@ -277,17 +289,17 @@
         "type": "SEQ",
         "members": [
           {
-            "type": "REPEAT",
-            "content": {
-              "type": "SYMBOL",
-              "name": "line_end"
-            }
-          },
-          {
             "type": "REPEAT1",
             "content": {
               "type": "SYMBOL",
               "name": "paragraph"
+            }
+          },
+          {
+            "type": "REPEAT",
+            "content": {
+              "type": "SYMBOL",
+              "name": "line_end"
             }
           }
         ]
@@ -667,7 +679,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "_strong_content"
+          "name": "_line_content"
         },
         {
           "type": "ALIAS",
@@ -694,7 +706,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "_strong_content"
+          "name": "_line_content"
         },
         {
           "type": "ALIAS",

@@ -32,7 +32,7 @@ module.exports = grammar({
   ],
 
   rules: {
-    source_file: ($) => repeat($._section),
+    source_file: ($) => seq(repeat($.line_end), repeat($._section)),
 
     comment: ($) => token(seq("<!--", /.*/, "-->")),
 
@@ -94,7 +94,7 @@ module.exports = grammar({
     double_quote: ($) => '"',
     symbols: ($) => /[@#\$%\^\&\*\(\)_\+\=\-/><~\\]/,
     literal: ($) => prec(10, /\\[@#\$%\^\&\*\(\)_\+\=\-/><~\\ ]/),
-    content: ($) => prec.left(3, seq(repeat($.line_end), repeat1($.paragraph))),
+    content: ($) => prec.left(3, seq(repeat1($.paragraph), repeat($.line_end))),
     _section: ($) => prec.right(choice($.heading, $.content)),
     heading: ($) =>
       prec(
@@ -152,13 +152,13 @@ module.exports = grammar({
     _strong_star: ($) =>
       seq(
         alias($._strong_star_start, $.strong_start),
-        $._strong_content,
+        $._line_content,
         alias($._strong_star_end, $.strong_end),
       ),
     _strong_under: ($) =>
       seq(
         alias($._strong_under_start, $.strong_start),
-        $._strong_content,
+        $._line_content,
         alias($._strong_under_end, $.strong_end),
       ),
     _strong_content: ($) =>
