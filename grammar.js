@@ -94,27 +94,34 @@ module.exports = grammar({
     double_quote: ($) => '"',
     symbols: ($) => /[@#\$%\^\&\*\(\)_\+\=\-/><~\\]/,
     literal: ($) => prec(10, /\\[@#\$%\^\&\*\(\)_\+\=\-/><~\\ ]/),
-    content: ($) => prec.right(seq(repeat($.line_end), repeat1($.paragraph))),
-    _section: ($) =>
-      prec.right(choice(seq($.heading, $.content), $.heading, $.content)),
+    content: ($) => prec.left(3, seq(repeat($.line_end), repeat1($.paragraph))),
+    _section: ($) => prec.right(choice($.heading, $.content)),
     heading: ($) =>
-      seq(
-        $._line_start,
-        choice(
-          $.heading_1,
-          $.heading_2,
-          $.heading_3,
-          $.heading_4,
-          $.heading_5,
-          $.heading_6,
+      prec(
+        5,
+        seq(
+          $._line_start,
+          choice(
+            $.heading_1,
+            $.heading_2,
+            $.heading_3,
+            $.heading_4,
+            $.heading_5,
+            $.heading_6,
+          ),
         ),
       ),
-    heading_1: ($) => prec.right(seq("#", $._line, repeat($.line_end))),
-    heading_2: ($) => prec.right(seq("##", $._line, repeat($.line_end))),
-    heading_3: ($) => prec.right(seq("###", $._line, repeat($.line_end))),
-    heading_4: ($) => prec.right(seq("####", $._line, repeat($.line_end))),
-    heading_5: ($) => prec.right(seq("#####", $._line, repeat($.line_end))),
-    heading_6: ($) => prec.right(seq("######", $._line, repeat($.line_end))),
+    heading_1: ($) => prec.right(seq("#", $._line_content, repeat($.line_end))),
+    heading_2: ($) =>
+      prec.right(seq("##", $._line_content, repeat($.line_end))),
+    heading_3: ($) =>
+      prec.right(seq("###", $._line_content, repeat($.line_end))),
+    heading_4: ($) =>
+      prec.right(seq("####", $._line_content, repeat($.line_end))),
+    heading_5: ($) =>
+      prec.right(seq("#####", $._line_content, repeat($.line_end))),
+    heading_6: ($) =>
+      prec.right(seq("######", $._line_content, repeat($.line_end))),
 
     emph: ($) => choice(prec(3, $._emph_star), prec(3, $._emph_under)),
     _emph_star: ($) =>
