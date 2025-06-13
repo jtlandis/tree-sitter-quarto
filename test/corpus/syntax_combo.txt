@@ -46,7 +46,6 @@ inner emph lag 3 stars
 
 ====================
 inner strong lag 3 stars
-:skip
 ====================
 *some **text***
 

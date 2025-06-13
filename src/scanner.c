@@ -108,6 +108,14 @@ static int32_t lex_lookahead(LexWrap* wrapper) {
     }
 }
 
+static int32_t lex_lookbehind(LexWrap* wrapper) {
+    if (wrapper->pos == 0) {
+        return not_found;
+    } else {
+        return *array_get(&wrapper->buffer, wrapper->pos - 1 );
+    }
+}
+
 static void lex_advance(LexWrap* wrapper, bool skip) {
     int32_t lookahead = lex_lookahead(wrapper);
     if (wrapper->pos == wrapper->buffer.size) {
@@ -203,9 +211,9 @@ static bool pos_ge(Pos *x, Pos *y) {
 //     // fprintf(stderr, "Pos { row: %u, col: %u }", pos->row, pos->col);
 // }
 
-// static void debug_pos(const Pos *pos) {
-//     // fprintf(stderr, "[%u, %u]", pos->row, pos->col);
-// }
+static void debug_pos(const Pos *pos) {
+    fprintf(stderr, "[%u, %u]", pos->row, pos->col);
+}
 
 static Pos lex_current_position(LexWrap *wrapper) {
     Pos range = new_position(wrapper->init_pos.row, wrapper->init_pos.col + wrapper->pos);
@@ -302,12 +310,12 @@ static enum RangeType classify_range(Range *x, Range *y) {
 
 }
 
-// static void print_parse_result(const ParseResult *res) {
-    // fprintf(stderr, "ParseResult { success: %d, length: %u, range: ", res->success, res->length);
-    // fprintf(stderr, "[%i, %i] - ", res->range.start.row, res->range.start.col);
-    // fprintf(stderr, "[%i, %i]", res->range.end.row, res->range.end.col);
-    // fprintf(stderr, ", token: %d }\n", res->token);
-// }
+static void print_parse_result(const ParseResult *res) {
+    fprintf(stderr, "ParseResult { success: %d, length: %u, range: ", res->success, res->length);
+    fprintf(stderr, "[%i, %i] - ", res->range.start.row, res->range.start.col);
+    fprintf(stderr, "[%i, %i]", res->range.end.row, res->range.end.col);
+    fprintf(stderr, ", token: %d }\n", res->token);
+}
 
 // static void print_stack(ParseResultArray *stack) {
 //     for (uint32_t i = 0; i < stack->size; i++) {
@@ -435,11 +443,11 @@ static bool is_inline_synatx(int32_t char_) {
 
 // prototypes:
 
-static ParseResult parse_inline(LexWrap *wrapper, ParseResultArray* stack);
+static ParseResult parse_inline(LexWrap *wrapper, ParseResultArray* stack, int32_t prior_char);
 static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack);
-static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack);
+static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_t prior_char);
 
-static ParseResult parse_inline(LexWrap *wrapper, ParseResultArray* stack) {
+static ParseResult parse_inline(LexWrap *wrapper, ParseResultArray* stack, int32_t prior_char) {
     // fprintf(stderr, "calling parse_inline()\n");
     // uint32_t stack_start_size = stack->size;
     uint32_t buffer_start_pos = wrapper->pos;
@@ -453,7 +461,7 @@ static ParseResult parse_inline(LexWrap *wrapper, ParseResultArray* stack) {
         }
 
         case '_': {
-            res = parse_under(wrapper, stack);
+            res = parse_under(wrapper, stack, prior_char);
             break;
         }
 
@@ -558,6 +566,7 @@ static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack) {
     ///                    early.
     /// > 3 --> return false
     uint8_t char_count = 0;
+    int32_t last_char = '*';
     while (lex_lookahead(wrapper) == '*') {
         lex_advance(wrapper, false);
         char_count++;
@@ -622,6 +631,7 @@ static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack) {
                                 ParseResult attempt = parse_star(wrapper, stack);
                                 if (attempt.success) {
                                     lookahead = lex_lookahead(wrapper);
+                                    last_char  = lex_lookbehind(wrapper);
                                     continue;
                                 } else {
                                     lex_set_position(wrapper, last_lex_pos - 1);
@@ -648,6 +658,7 @@ static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack) {
                                 ParseResult attempt = parse_star(wrapper, stack);
                                 if (attempt.success) {
                                     lookahead = lex_lookahead(wrapper);
+                                    last_char = lex_lookbehind(wrapper);
                                     continue;
                                 } else {
                                     lex_set_position(wrapper, last_lex_pos - 1);
@@ -685,6 +696,7 @@ static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack) {
                                     char_count--;
                                 }
                                 lookahead = lex_lookahead(wrapper);
+                                last_char = lex_lookbehind(wrapper);
                                 continue;
                             }
                             case 2: {
@@ -702,6 +714,7 @@ static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack) {
                                     char_count -= 2;
                                 }
                                 lookahead = lex_lookahead(wrapper);
+                                last_char = lex_lookbehind(wrapper);
                                 continue;
                             }
                             default: {
@@ -752,16 +765,20 @@ static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack) {
                 // check if inline symbol
                 new_line_count = 0;
                 if (is_inline_synatx(lookahead)) {
-                    ParseResult attempt = parse_inline(wrapper, stack);
+                    ParseResult attempt = parse_inline(wrapper, stack, last_char);
                     if (!attempt.success) {
+                        // decide if a failure here means we cannot finish this...
+                        // TODO!
                         return res;
                     }
                     lookahead = lex_lookahead(wrapper);
+                    last_char = lex_lookbehind(wrapper);
                     continue;
                 }
             }
                 break;
         }
+        last_char = lookahead;
         lex_advance(wrapper, false);
         lookahead = lex_lookahead(wrapper);
     }
@@ -805,7 +822,7 @@ static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack) {
 
 }
 
-static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack) {
+static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_t prior_char) {
     // fprintf(stderr, "calling - parse_under()\n");
     // uint32_t stack_start_size = stack->size;
     uint32_t buffer_start_pos = wrapper->pos;
@@ -813,6 +830,10 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack) {
     ParseResult res = new_parse_result();
     res.range.start = wrapper->curr_pos;
 
+
+    if (!(is_whitespace(prior_char) || prior_char == '_')) {
+        return res;
+    }
     /// for this parse to be valid one of
     /// if we detect 1 --> expecting emphasis
     /// if we detect 2 --> expecting strong
@@ -857,7 +878,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack) {
         // emphasis or strong.
         return res;
     }
-    uint32_t last_char = ' ';
+    int32_t last_char = prior_char;
     uint8_t end_char_count = 0;
     uint8_t new_line_count = 0;
     while(lookahead != '\0' && char_count > 0) {
@@ -898,7 +919,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack) {
                                     // however if the last character is NOT alphabet
                                     // then it is possible to parse the next _.
                                     lex_backtrack_n(wrapper, 1);
-                                    ParseResult attempt = parse_under(wrapper, stack);
+                                    ParseResult attempt = parse_under(wrapper, stack,  last_char);
                                     if (!attempt.success) {
                                         lex_set_position(wrapper, last_lex_pos);
                                     }
@@ -922,7 +943,9 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack) {
                                 // fprintf(stderr, "about to call parse_under: ");
                                 // debug_pos(&pos);
                                 // fprintf(stderr, "\n");
-                                ParseResult attempt = parse_under(wrapper, stack);
+                                // pretend last character was valid
+                                int32_t fake_char = ' ';
+                                ParseResult attempt = parse_under(wrapper, stack, fake_char);
                                 // fprintf(stderr, "returned with: ");
                                 // print_parse_result(&attempt);
                                 // fprintf(stderr, " and at position: ");
@@ -993,7 +1016,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack) {
 
                                 if (!isalpha(last_char) && isalpha(next_char)) {
 
-                                    ParseResult attempt = parse_under(wrapper, stack);
+                                    ParseResult attempt = parse_under(wrapper, stack, last_char);
                                     if (!attempt.success) {
                                         lex_set_position(wrapper, last_lex_pos + 1);
                                         break;
@@ -1017,6 +1040,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack) {
                                     dont_parse_next_n(wrapper, stack, 1);
                                     lookahead = next_char;
                                 }
+                                last_char = lex_lookbehind(wrapper);
                                 continue;
                             }
                             case 2:  {
@@ -1037,7 +1061,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack) {
                                     // however if the last character is NOT alphabet
                                     // then it is possible to parse the next _.
                                     lex_backtrack_n(wrapper, 2);
-                                    ParseResult attempt = parse_under(wrapper, stack);
+                                    ParseResult attempt = parse_under(wrapper, stack, last_char);
                                     if (!attempt.success) {
                                         lex_set_position(wrapper, last_lex_pos);
                                         // dont_parse_next_n(wrapper, stack, 2);
@@ -1087,7 +1111,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack) {
                                     // however if the last character is NOT alphabet
                                     // then it is possible to parse the next _.
                                     lex_backtrack_n(wrapper, 1);
-                                    ParseResult res = parse_under(wrapper, stack);
+                                    ParseResult res = parse_under(wrapper, stack, last_char);
                                     if (!res.success) {
                                         lex_set_position(wrapper, last_lex_pos);
                                         // dont_parse_next_n(wrapper, stack, 1);
@@ -1137,6 +1161,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack) {
                                     dont_parse_next_n(wrapper, stack, 1);
                                 }
                                 lookahead = next_char;
+                                last_char = lex_lookbehind(wrapper);
                                 continue;
                             }
                             case 3: {
@@ -1176,6 +1201,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack) {
                                     dont_parse_next_n(wrapper, stack, 1);
                                     lookahead = next_char;
                                     char_count -= 2;
+                                    last_char = '_';
                                     continue;
                                 }
                                 break;
@@ -1231,12 +1257,15 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack) {
                 // check if inline symbol
                 new_line_count = 0;
                 if (is_inline_synatx(lookahead)) {
-                    ParseResult attempt = parse_inline(wrapper, stack);
+                    ParseResult attempt = parse_inline(wrapper, stack, last_char);
                     // should probabbly decide how to handle inline parse failures
                     // maybe they should just be considered literal for this purpose
                     // or maybe just ignored for later?
                     if(!attempt.success) {
                         // do something here?
+                        lex_backtrack_n(wrapper, 1);
+                        last_char = lex_lookahead(wrapper);
+                        lex_advance(wrapper, false);
                     }
                     lookahead = lex_lookahead(wrapper);
                     continue;
@@ -1444,6 +1473,7 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
     // the position of the state should ALWAYS be correct when this
     // function is called.
     LexWrap wrapper = new_lexer(lexer, state->pos);
+    int32_t last_char = '\n'; // assume we are at the start... may not always be true
     int32_t lookahead = lex_lookahead(&wrapper);
     // int8_t indent_size = 0;
     Pos pos = new_position(0, 0);
@@ -1477,6 +1507,7 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
 
         }
     }
+    last_char = lex_lookahead(&wrapper);
     while(lookahead != '\0') {
         switch (lookahead) {
             case '\n': {
@@ -1488,7 +1519,9 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
                 if (lex_lookahead(&wrapper) == '\n') {
                     return;
                 }
-                break;
+                lex_advance(&wrapper, false);
+                lookahead = lex_lookahead(&wrapper);
+                continue;
             }
             default: {
 
@@ -1496,14 +1529,18 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
                     // fprintf(stderr, "about to parse inline: ");
                     // debug_pos(&wrapper.curr_pos);
                     // fprintf(stderr, "\n");
-                    ParseResult attempt = parse_inline(&wrapper, &state->results);
+                    ParseResult attempt = parse_inline(&wrapper, &state->results, last_char);
+                    // last_char = lex_lookbehind(&wrapper);
+                    // print_parse_result(&attempt);
+                    // debug_pos(&wrapper.curr_pos);
                     if (attempt.success) {
-                        lex_backtrack_n(&wrapper, 1);
+                       lex_backtrack_n(&wrapper, 1);
                     }
                 }
             }
         }
         lex_advance(&wrapper, false);
+        last_char = lex_lookahead(&wrapper);
         pos = wrapper.curr_pos;
         size_t index = stack_find(&state->results, &pos, DO_NOT_PARSE, false);
         if (index < not_found) {
@@ -1511,6 +1548,7 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
             for (uint32_t i = 0; i < no_parse->length; i++) {
                 lex_advance(&wrapper, false);
             }
+            last_char = lex_lookbehind(&wrapper);
         }
         lookahead = lex_lookahead(&wrapper);
 
@@ -1534,6 +1572,7 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       return false;
   }
 
+  int32_t last_char = 'a'; // assume it is  a word character.
 
   if (valid_symbols[LINE_START] && state->pos.col == 0 &&
       lexer->lookahead != '\n' && lexer->lookahead != '\0') {
@@ -1548,6 +1587,7 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
   bool skipped_whitespace = false;
   while (lexer->lookahead == ' ' || lexer->lookahead == '\t') {
     skipped_whitespace = true;
+    last_char = lexer->lookahead;
     lexer->advance(lexer, true);
   }
 
@@ -1782,7 +1822,7 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
           // reset wrapper to begining of this scan.
           lex_backtrack_n(&wrapper, wrapper.buffer.size);
           // try and handle this parse...
-          ParseResult res = parse_under(&wrapper, &state->results);
+          ParseResult res = parse_under(&wrapper, &state->results, last_char);
           if (res.success) {
               if (res.token == NONE) {
                   lexer->result_symbol = ERROR;
