@@ -583,12 +583,13 @@ static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack) {
         }
         default: {}
     }
-    if (char_count > 3) {
+    int32_t lookahead = lex_lookahead(wrapper);
+    if (char_count > 3 || is_whitespace(lookahead)) {
         // as a special feature, we insert this into
         // the stack to signal that it should not match
         // any symbols
 
-        res.success = true;
+        res.success = false;
         res.range.end = wrapper->curr_pos;
         res.length = char_count;
         res.token = DO_NOT_PARSE;
@@ -597,12 +598,6 @@ static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack) {
         // print_parse_result(&res);
         // fprintf(stderr, "\n");
         stack_insert(stack, res);
-        return res;
-    }
-    int32_t lookahead = lex_lookahead(wrapper);
-    if (is_whitespace(lookahead)) {
-        // cannot parse star as any type of valid
-        // emphasis or strong.
         return res;
     }
     uint32_t last_lex_pos = 0;
@@ -867,7 +862,8 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
         }
         default: {}
     }
-    if (char_count > 3) {
+    int32_t lookahead = lex_lookahead(wrapper);
+    if (char_count > 3 || is_whitespace(lookahead)) {
         // as a special feature, we insert this into
         // the stack to signal that it should not match
         // any symbols
@@ -881,18 +877,6 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
         // print_parse_result(&res);
         // fprintf(stderr, "\n");
         stack_insert(stack, res);
-        return res;
-    }
-    int32_t lookahead = lex_lookahead(wrapper);
-    if (is_whitespace(lookahead)) {
-        // fprintf(stderr, "whitespace found\n");
-        // res.success = false;
-        res.token = DO_NOT_PARSE;
-        res.range.end = wrapper->curr_pos;
-        res.length = char_count;
-        // print_parse_result(&res);
-        stack_insert(stack, res);
-
         return res;
     }
     int32_t last_char = prior_char;
