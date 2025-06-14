@@ -323,7 +323,7 @@ static void print_parse_result(const ParseResult *res) {
 
 // static void print_stack(ParseResultArray *stack) {
 //     for (uint32_t i = 0; i < stack->size; i++) {
-//         // fprintf(stderr, "\t");
+//         fprintf(stderr, "\t");
 //         print_parse_result(&stack->contents[i]);
 //     }
 // }
@@ -450,6 +450,7 @@ static bool is_inline_synatx(int32_t char_) {
 static ParseResult parse_inline(LexWrap *wrapper, ParseResultArray* stack, int32_t prior_char);
 static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack);
 static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_t prior_char);
+static ParseResult parse_superscript(LexWrap *wrapper, ParseResultArray* stack);
 
 static ParseResult parse_inline(LexWrap *wrapper, ParseResultArray* stack, int32_t prior_char) {
     // fprintf(stderr, "calling parse_inline()\n");
@@ -466,6 +467,11 @@ static ParseResult parse_inline(LexWrap *wrapper, ParseResultArray* stack, int32
 
         case '_': {
             res = parse_under(wrapper, stack, prior_char);
+            break;
+        }
+
+        case '^': {
+            res = parse_superscript(wrapper, stack);
             break;
         }
 
@@ -766,9 +772,9 @@ static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack) {
                 if (is_inline_synatx(lookahead)) {
                     ParseResult attempt = parse_inline(wrapper, stack, last_char);
                     if (!attempt.success) {
-                        // decide if a failure here means we cannot finish this...
-                        // TODO!
-                        return res;
+                        // the success or failure of some inline here does NOT mean
+                        // our current one should fail...
+                        // return res;
                     }
                     lookahead = lex_lookahead(wrapper);
                     last_char = lex_lookbehind(wrapper);
@@ -993,7 +999,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
                             }
                             default: {
                                 res.success = true;
-                                Pos pos = wrapper->curr_pos;
+                                // Pos pos = wrapper->curr_pos;
                                 // print_pos(&pos);
                                 dont_parse_next_n(wrapper, stack, 1);
                                 // print_stack(stack);
@@ -1323,6 +1329,22 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
 
 }
 
+static void remove_tokens_ge_pos(ParseResultArray* stack, enum ParseToken token, Pos* pos) {
+    uint32_t index = stack->size;
+    ParseResult* ele;
+    for (uint32_t j = index; j > 0; j--) {
+        ele = &stack->contents[j - 1];
+        if (pos_ge(&ele->range.start, pos)) {
+            if (token == ele->token) {
+                array_erase(stack, j - 1);
+            }
+        } else {
+            return;
+        }
+    }
+    return;
+}
+
 static ParseResult parse_superscript(LexWrap *wrapper, ParseResultArray* stack) {
     uint32_t buffer_start_pos = wrapper->pos;
     ParseResult res = new_parse_result();
@@ -1354,6 +1376,7 @@ static ParseResult parse_superscript(LexWrap *wrapper, ParseResultArray* stack) 
                 res.success = true;
                 res.length = wrapper->pos - buffer_start_pos;
                 res.token = SUPERSCRIPT;
+                res.range.end = wrapper->curr_pos;
                 goto func_end;
                 break;
             }
@@ -1366,6 +1389,8 @@ static ParseResult parse_superscript(LexWrap *wrapper, ParseResultArray* stack) 
                 if (lookahead == '\n' || lookahead == '\\') {
                     goto func_end;
                 }
+                lex_advance(wrapper, false);
+                lookahead = lex_lookahead(wrapper);
                 last_char = '\\';
                 continue;
             }
@@ -1375,7 +1400,7 @@ static ParseResult parse_superscript(LexWrap *wrapper, ParseResultArray* stack) 
             }
             default: {
                 if (is_inline_synatx(lookahead)) {
-                    ParseResult attempt = parse_inline(wrapper, stack, last_char);
+                    parse_inline(wrapper, stack, last_char);
                     last_char = lex_lookbehind(wrapper);
                     lookahead = lex_lookahead(wrapper);
                     continue;
@@ -1396,11 +1421,18 @@ static ParseResult parse_superscript(LexWrap *wrapper, ParseResultArray* stack) 
         } else {
             ParseResult start = new_parse_result();
             start.range.start = res.range.start;
-            start.range.end = res.range.start;
-            start.range.end.col++;
+            lex_set_position(wrapper, buffer_start_pos + 1);
+            start.range.end = wrapper->curr_pos;
             start.token = DO_NOT_PARSE;
             start.length = 1;
             stack_insert(stack, start);
+            // since this parse failed and we reset the position,
+            // we will remove any "NO PARSE" in the stack after
+            // this position. These could be symbols that will be
+            // complete some other syntax,
+            // example  *my **world^up side^** down*
+            // space invalidates superscripts,
+            remove_tokens_ge_pos(stack, DO_NOT_PARSE, &wrapper->curr_pos);
         }
         return res;
     }
@@ -1937,6 +1969,32 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       }
 
   }
+
+  if (lexer->lookahead == '^' && (valid_symbols[SUPERSCRIPT_START] ||
+      valid_symbols[SUPERSCRIPT_END])) {
+          state->pos.col = lexer->get_column(lexer);
+          LexWrap wrapper = new_lexer(lexer, state->pos);
+          lex_advance(&wrapper, false);
+          // possible end
+          lexer->mark_end(lexer);
+          if (valid_symbols[SUPERSCRIPT_END]) {
+              size_t index = stack_find(&state->results, &wrapper.curr_pos, SUPERSCRIPT, true);
+              if (index < not_found) {
+                  lexer->result_symbol = SUPERSCRIPT_END;
+                  array_erase(&state->results, index);
+                  return true;
+              }
+          }
+
+
+          if (valid_symbols[SUPERSCRIPT_START]) {
+              size_t index = stack_find(&state->results, &state->pos, SUPERSCRIPT, false);
+              if (index < not_found) {
+                  lexer->result_symbol = SUPERSCRIPT_START;
+                  return true;
+              }
+          }
+      }
 
   return false; // No token recognized
 }
