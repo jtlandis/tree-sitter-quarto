@@ -147,6 +147,10 @@
             "name": "symbols"
           },
           {
+            "type": "SYMBOL",
+            "name": "superscript"
+          },
+          {
             "type": "ALIAS",
             "content": {
               "type": "SYMBOL",
@@ -779,6 +783,23 @@
           ]
         }
       }
+    },
+    "superscript": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "superscript_start"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_line_content"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "superscript_end"
+        }
+      ]
     }
   },
   "extras": [
@@ -840,6 +861,14 @@
     {
       "type": "SYMBOL",
       "name": "_strong_under_end"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "superscript_start"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "superscript_end"
     },
     {
       "type": "SYMBOL",

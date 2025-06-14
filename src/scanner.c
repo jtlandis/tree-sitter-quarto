@@ -22,6 +22,8 @@ enum TokenType {
   STRONG_STAR_END,
   STRONG_UNDER_START,
   STRONG_UNDER_END,
+  SUPERSCRIPT_START,
+  SUPERSCRIPT_END,
   NO_PARSE,
   ERROR, //General Emphasis
 };
@@ -33,6 +35,7 @@ enum ParseToken {
     EMPHASIS_UNDER,
     STRONG_STAR,
     STRONG_UNDER,
+    SUPERSCRIPT,
 };
 
 
