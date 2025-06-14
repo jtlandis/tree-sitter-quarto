@@ -50,7 +50,7 @@ _some_* text
         (emph_start)
         (word)
         (emph_end))
-      (symbols)
+      (literal)
       (word)
       (line_end)
       (paragraph_end

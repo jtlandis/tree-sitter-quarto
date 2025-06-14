@@ -69,8 +69,7 @@ star word 3 star space word
         (emph_start)
         (word)
         (emph_end))
-      (symbols)
-      (symbols)
+      (literal)
       (word)
       (line_end)
       (paragraph_end
@@ -91,9 +90,7 @@ star word 4 star space word
         (emph_start)
         (word)
         (emph_end))
-      (symbols)
-      (symbols)
-      (symbols)
+      (literal)
       (word)
       (line_end)
       (paragraph_end
@@ -153,8 +150,7 @@ star word space 3 star space word
         (emph_start)
         (word)
         (emph_end))
-      (symbols)
-      (symbols)
+      (literal)
       (word)
       (line_end)
       (paragraph_end
@@ -175,9 +171,7 @@ star word space 4 star space word
         (emph_start)
         (word)
         (emph_end))
-      (symbols)
-      (symbols)
-      (symbols)
+      (literal)
       (word)
       (line_end)
       (paragraph_end
@@ -259,7 +253,7 @@ star word star word star -> emph
         (word)
         (emph_end))
       (word)
-      (symbols)
+      (literal)
       (line_end)
       (paragraph_end
         (MISSING line_end)))))
@@ -348,7 +342,7 @@ under word 5 under word under
         (emph_end))
       (literal)
       (word)
-      (symbols)
+      (literal)
       (line_end)
       (paragraph_end
         (MISSING line_end)))))
@@ -369,8 +363,7 @@ star word star word 2 star
         (word)
         (emph_end))
       (word)
-      (symbols)
-      (symbols)
+      (literal)
       (line_end)
       (paragraph_end
         (MISSING line_end)))))
