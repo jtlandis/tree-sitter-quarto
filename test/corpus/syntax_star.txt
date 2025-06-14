@@ -49,7 +49,7 @@ star word star under space word -> valid
         (emph_start)
         (word)
         (emph_end))
-      (symbols)
+      (literal)
       (word)
       (line_end)
       (paragraph_end

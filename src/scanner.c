@@ -832,6 +832,15 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
 
 
     if (!(is_whitespace(prior_char) || prior_char == '_')) {
+        // we should fail here
+        // fprintf(stderr, "failing early\n");
+        lex_advance(wrapper, false);
+        // res.success = false;
+        res.token = DO_NOT_PARSE;
+        res.length = 1;
+        res.range.end = wrapper->curr_pos;
+        // print_parse_result(&res);
+        stack_insert(stack, res);
         return res;
     }
     /// for this parse to be valid one of
@@ -862,9 +871,10 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
         // the stack to signal that it should not match
         // any symbols
 
-        res.success = true;
+        // res.success = true;
         res.range.end = wrapper->curr_pos;
         res.length = char_count;
+        res.token = DO_NOT_PARSE;
         // wrapper->lexer->mark_end(wrapper->lexer);
         // fprintf(stderr, "returning a NONE result:");
         // print_parse_result(&res);
@@ -874,8 +884,14 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
     }
     int32_t lookahead = lex_lookahead(wrapper);
     if (is_whitespace(lookahead)) {
-        // cannot parse star as any type of valid
-        // emphasis or strong.
+        // fprintf(stderr, "whitespace found\n");
+        // res.success = false;
+        res.token = DO_NOT_PARSE;
+        res.range.end = wrapper->curr_pos;
+        res.length = char_count;
+        // print_parse_result(&res);
+        stack_insert(stack, res);
+
         return res;
     }
     int32_t last_char = prior_char;
@@ -939,7 +955,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
                                 // interestingly, if we can parse this
                                 // token, it takes precendence
                                 lex_backtrack_n(wrapper, 1);
-                                Pos pos = wrapper->curr_pos;
+                                // Pos pos = wrapper->curr_pos;
                                 // fprintf(stderr, "about to call parse_under: ");
                                 // debug_pos(&pos);
                                 // fprintf(stderr, "\n");
@@ -949,7 +965,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
                                 // fprintf(stderr, "returned with: ");
                                 // print_parse_result(&attempt);
                                 // fprintf(stderr, " and at position: ");
-                                pos = wrapper->curr_pos;
+                                // pos = wrapper->curr_pos;
                                 // debug_pos(&pos);
                                 // fprintf(stderr, "\n");
                                 if (!attempt.success) {
@@ -1520,6 +1536,7 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
                     return;
                 }
                 lex_advance(&wrapper, false);
+                last_char = '\\';
                 lookahead = lex_lookahead(&wrapper);
                 continue;
             }
@@ -1528,14 +1545,16 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
                 if (is_inline_synatx(lookahead)) {
                     // fprintf(stderr, "about to parse inline: ");
                     // debug_pos(&wrapper.curr_pos);
-                    // fprintf(stderr, "\n");
+                    // fprintf(stderr, "\nbehind: %c    lookahead: %c\n", last_char, lookahead);
                     ParseResult attempt = parse_inline(&wrapper, &state->results, last_char);
-                    // last_char = lex_lookbehind(&wrapper);
-                    // print_parse_result(&attempt);
+                    last_char = lex_lookbehind(&wrapper);
+                    lookahead = lex_lookahead(&wrapper);
                     // debug_pos(&wrapper.curr_pos);
-                    if (attempt.success) {
-                       lex_backtrack_n(&wrapper, 1);
-                    }
+                    // fprintf(stderr, "\n");
+                    // print_parse_result(&attempt);
+                    // print_stack(&state->results);
+                    continue;
+
                 }
             }
         }

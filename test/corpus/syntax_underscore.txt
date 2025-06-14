@@ -29,8 +29,7 @@ _some__ text
     (paragraph
       (literal)
       (word)
-      (symbols)
-      (symbols)
+      (literal)
       (word)
       (line_end)
       (paragraph_end
@@ -72,7 +71,7 @@ _some___ text
         (word)
         (emph_end))
       (literal)
-      (symbols)
+      (literal)
       (word)
       (line_end)
       (paragraph_end
@@ -93,8 +92,7 @@ _some____ text
         (word)
         (emph_end))
       (literal)
-      (symbols)
-      (symbols)
+      (literal)
       (word)
       (line_end)
       (paragraph_end
@@ -131,8 +129,7 @@ _some __ text
     (paragraph
       (literal)
       (word)
-      (symbols)
-      (symbols)
+      (literal)
       (word)
       (line_end)
       (paragraph_end
@@ -153,7 +150,7 @@ _some ___ text
         (word)
         (emph_end))
       (literal)
-      (symbols)
+      (literal)
       (word)
       (line_end)
       (paragraph_end
@@ -174,8 +171,7 @@ _some ____ text
         (word)
         (emph_end))
       (literal)
-      (symbols)
-      (symbols)
+      (literal)
       (word)
       (line_end)
       (paragraph_end
@@ -230,7 +226,7 @@ _some ___text
       (literal)
       (word)
       (literal)
-      (symbols)
+      (literal)
       (word)
       (line_end)
       (paragraph_end
@@ -358,8 +354,7 @@ _some_text__
       (word)
       (literal)
       (word)
-      (symbols)
-      (symbols)
+      (literal)
       (line_end)
       (paragraph_end
         (MISSING line_end)))))
@@ -396,10 +391,9 @@ _some___text__
       (literal)
       (word)
       (literal)
-      (symbols)
+      (literal)
       (word)
-      (symbols)
-      (symbols)
+      (literal)
       (line_end)
       (paragraph_end
         (MISSING line_end)))))
