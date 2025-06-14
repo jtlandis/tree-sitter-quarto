@@ -1323,6 +1323,89 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
 
 }
 
+static ParseResult parse_superscript(LexWrap *wrapper, ParseResultArray* stack) {
+    uint32_t buffer_start_pos = wrapper->pos;
+    ParseResult res = new_parse_result();
+    res.range.start = wrapper->curr_pos;
+
+    int32_t lookahead = lex_lookahead(wrapper);
+
+    if (lookahead != '^') {
+        return res;
+    }
+
+    lex_advance(wrapper, false);
+    lookahead = lex_lookahead(wrapper);
+    int32_t last_char = '^';
+    if (lookahead == '^') {
+        // invalid superscript
+        lex_advance(wrapper, false);
+        res.range.end = wrapper->curr_pos;
+        res.length = 2;
+        res.token = DO_NOT_PARSE;
+        stack_insert(stack, res);
+        return res;
+    }
+
+    while(lookahead != '\0') {
+        switch (lookahead) {
+            case '^': {
+                lex_advance(wrapper, false);
+                res.success = true;
+                res.length = wrapper->pos - buffer_start_pos;
+                res.token = SUPERSCRIPT;
+                goto func_end;
+                break;
+            }
+            case '\n': {
+                goto func_end;
+            }
+            case '\\': {
+                lex_advance(wrapper, false);
+                lookahead = lex_lookahead(wrapper);
+                if (lookahead == '\n' || lookahead == '\\') {
+                    goto func_end;
+                }
+                last_char = '\\';
+                continue;
+            }
+            case ' ':
+            case '\t': {
+                goto func_end;
+            }
+            default: {
+                if (is_inline_synatx(lookahead)) {
+                    ParseResult attempt = parse_inline(wrapper, stack, last_char);
+                    last_char = lex_lookbehind(wrapper);
+                    lookahead = lex_lookahead(wrapper);
+                    continue;
+                }
+            }
+
+            last_char = lookahead;
+            lex_advance(wrapper, false);
+            lookahead = lex_lookahead(wrapper);
+
+
+        }
+    }
+
+    func_end: {
+        if (res.success) {
+            stack_insert(stack, res);
+        } else {
+            ParseResult start = new_parse_result();
+            start.range.start = res.range.start;
+            start.range.end = res.range.start;
+            start.range.end.col++;
+            start.token = DO_NOT_PARSE;
+            start.length = 1;
+            stack_insert(stack, start);
+        }
+        return res;
+    }
+
+}
 
 
 typedef struct {
