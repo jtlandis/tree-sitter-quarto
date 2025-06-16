@@ -29,6 +29,10 @@ module.exports = grammar({
     $._strong_under_end,
     $.superscript_start,
     $.superscript_end,
+    $.subscript_start,
+    $.subscript_end,
+    $.strike_start,
+    $.strike_end,
     $._no_parse,
     $._unused_error,
   ],
@@ -67,6 +71,8 @@ module.exports = grammar({
           $.literal,
           $.symbols,
           $.superscript,
+          $.subscript,
+          $.striketrhough,
           alias($._no_parse, $.literal),
         ),
       ), //, $.whitespace)), //prec(1, repeat1(choice($.word, $.whitespace))),
@@ -175,6 +181,8 @@ module.exports = grammar({
       ),
     superscript: ($) =>
       seq($.superscript_start, $._line_content, $.superscript_end),
+    subscript: ($) => seq($.subscript_start, $._line_content, $.subscript_end),
+    striketrhough: ($) => seq($.strike_start, $._line_content, $.strike_end),
   },
 
   conflicts: ($) => [
