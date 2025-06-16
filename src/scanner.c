@@ -457,6 +457,8 @@ static ParseResult parse_inline(LexWrap *wrapper, ParseResultArray* stack, int32
 static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack);
 static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_t prior_char);
 static ParseResult parse_superscript(LexWrap *wrapper, ParseResultArray* stack);
+static ParseResult parse_tilde(LexWrap *wrapper, ParseResultArray* stack);
+
 
 static ParseResult parse_inline(LexWrap *wrapper, ParseResultArray* stack, int32_t prior_char) {
     // fprintf(stderr, "calling parse_inline()\n");
@@ -478,6 +480,11 @@ static ParseResult parse_inline(LexWrap *wrapper, ParseResultArray* stack, int32
 
         case '^': {
             res = parse_superscript(wrapper, stack);
+            break;
+        }
+
+        case '~': {
+            res = parse_tilde(wrapper, stack);
             break;
         }
 
@@ -2165,6 +2172,58 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
               if (index < not_found) {
                   lexer->result_symbol = SUPERSCRIPT_START;
                   return true;
+              }
+          }
+      }
+
+  if (lexer->lookahead == '~' && (valid_symbols[SUBSCRIPT_START] ||
+      valid_symbols[SUBSCRIPT_END] ||
+      valid_symbols[STRIKE_START] ||
+      valid_symbols[STRIKE_END])) {
+          state->pos.col = lexer->get_column(lexer);
+          LexWrap wrapper = new_lexer(lexer, state->pos);
+          lex_advance(&wrapper, false);
+          // possible end
+          lexer->mark_end(lexer);
+          if (valid_symbols[SUBSCRIPT_END]) {
+              size_t index = stack_find(&state->results, &wrapper.curr_pos, SUBSCRIPT, true);
+              if (index < not_found) {
+                  lexer->result_symbol = SUBSCRIPT_END;
+                  array_erase(&state->results, index);
+                  return true;
+              }
+          }
+
+
+          if (valid_symbols[SUBSCRIPT_START]) {
+              size_t index = stack_find(&state->results, &state->pos, SUBSCRIPT, false);
+              if (index < not_found) {
+                  lexer->result_symbol = SUBSCRIPT_START;
+                  return true;
+              }
+          }
+
+          if (lexer->lookahead == '~' && (valid_symbols[STRIKE_START] ||
+          valid_symbols[STRIKE_END])) {
+              lex_advance(&wrapper, false);
+              // possible end
+              lexer->mark_end(lexer);
+              if (valid_symbols[STRIKE_END]) {
+                  size_t index = stack_find(&state->results, &wrapper.curr_pos, STRIKETHROUGH, true);
+                  if (index < not_found) {
+                      lexer->result_symbol = STRIKE_END;
+                      array_erase(&state->results, index);
+                      return true;
+                  }
+              }
+
+
+              if (valid_symbols[STRIKE_START]) {
+                  size_t index = stack_find(&state->results, &state->pos, STRIKETHROUGH, false);
+                  if (index < not_found) {
+                      lexer->result_symbol = STRIKE_START;
+                      return true;
+                  }
               }
           }
       }
