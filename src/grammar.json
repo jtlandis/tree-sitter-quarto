@@ -151,6 +151,14 @@
             "name": "superscript"
           },
           {
+            "type": "SYMBOL",
+            "name": "subscript"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "striketrhough"
+          },
+          {
             "type": "ALIAS",
             "content": {
               "type": "SYMBOL",
@@ -800,6 +808,40 @@
           "name": "superscript_end"
         }
       ]
+    },
+    "subscript": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "subscript_start"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_line_content"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "subscript_end"
+        }
+      ]
+    },
+    "striketrhough": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "strike_start"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_line_content"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "strike_end"
+        }
+      ]
     }
   },
   "extras": [
@@ -869,6 +911,22 @@
     {
       "type": "SYMBOL",
       "name": "superscript_end"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "subscript_start"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "subscript_end"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "strike_start"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "strike_end"
     },
     {
       "type": "SYMBOL",

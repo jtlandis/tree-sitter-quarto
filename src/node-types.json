@@ -47,7 +47,15 @@
           "named": true
         },
         {
+          "type": "striketrhough",
+          "named": true
+        },
+        {
           "type": "strong",
+          "named": true
+        },
+        {
+          "type": "subscript",
           "named": true
         },
         {
@@ -125,7 +133,15 @@
           "named": true
         },
         {
+          "type": "striketrhough",
+          "named": true
+        },
+        {
           "type": "strong",
+          "named": true
+        },
+        {
+          "type": "subscript",
           "named": true
         },
         {
@@ -168,7 +184,15 @@
           "named": true
         },
         {
+          "type": "striketrhough",
+          "named": true
+        },
+        {
           "type": "strong",
+          "named": true
+        },
+        {
+          "type": "subscript",
           "named": true
         },
         {
@@ -211,7 +235,15 @@
           "named": true
         },
         {
+          "type": "striketrhough",
+          "named": true
+        },
+        {
           "type": "strong",
+          "named": true
+        },
+        {
+          "type": "subscript",
           "named": true
         },
         {
@@ -254,7 +286,15 @@
           "named": true
         },
         {
+          "type": "striketrhough",
+          "named": true
+        },
+        {
           "type": "strong",
+          "named": true
+        },
+        {
+          "type": "subscript",
           "named": true
         },
         {
@@ -297,7 +337,15 @@
           "named": true
         },
         {
+          "type": "striketrhough",
+          "named": true
+        },
+        {
           "type": "strong",
+          "named": true
+        },
+        {
+          "type": "subscript",
           "named": true
         },
         {
@@ -340,7 +388,15 @@
           "named": true
         },
         {
+          "type": "striketrhough",
+          "named": true
+        },
+        {
           "type": "strong",
+          "named": true
+        },
+        {
+          "type": "subscript",
           "named": true
         },
         {
@@ -411,7 +467,15 @@
           "named": true
         },
         {
+          "type": "striketrhough",
+          "named": true
+        },
+        {
           "type": "strong",
+          "named": true
+        },
+        {
+          "type": "subscript",
           "named": true
         },
         {
@@ -527,6 +591,61 @@
     }
   },
   {
+    "type": "striketrhough",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "emph",
+          "named": true
+        },
+        {
+          "type": "literal",
+          "named": true
+        },
+        {
+          "type": "puncuation",
+          "named": true
+        },
+        {
+          "type": "strike_end",
+          "named": true
+        },
+        {
+          "type": "strike_start",
+          "named": true
+        },
+        {
+          "type": "striketrhough",
+          "named": true
+        },
+        {
+          "type": "strong",
+          "named": true
+        },
+        {
+          "type": "subscript",
+          "named": true
+        },
+        {
+          "type": "superscript",
+          "named": true
+        },
+        {
+          "type": "symbols",
+          "named": true
+        },
+        {
+          "type": "word",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "strong",
     "named": true,
     "fields": {},
@@ -547,6 +666,10 @@
           "named": true
         },
         {
+          "type": "striketrhough",
+          "named": true
+        },
+        {
           "type": "strong",
           "named": true
         },
@@ -556,6 +679,65 @@
         },
         {
           "type": "strong_start",
+          "named": true
+        },
+        {
+          "type": "subscript",
+          "named": true
+        },
+        {
+          "type": "superscript",
+          "named": true
+        },
+        {
+          "type": "symbols",
+          "named": true
+        },
+        {
+          "type": "word",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "subscript",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "emph",
+          "named": true
+        },
+        {
+          "type": "literal",
+          "named": true
+        },
+        {
+          "type": "puncuation",
+          "named": true
+        },
+        {
+          "type": "striketrhough",
+          "named": true
+        },
+        {
+          "type": "strong",
+          "named": true
+        },
+        {
+          "type": "subscript",
+          "named": true
+        },
+        {
+          "type": "subscript_end",
+          "named": true
+        },
+        {
+          "type": "subscript_start",
           "named": true
         },
         {
@@ -594,7 +776,15 @@
           "named": true
         },
         {
+          "type": "striketrhough",
+          "named": true
+        },
+        {
           "type": "strong",
+          "named": true
+        },
+        {
+          "type": "subscript",
           "named": true
         },
         {
@@ -702,11 +892,27 @@
     "named": true
   },
   {
+    "type": "strike_end",
+    "named": true
+  },
+  {
+    "type": "strike_start",
+    "named": true
+  },
+  {
     "type": "strong_end",
     "named": true
   },
   {
     "type": "strong_start",
+    "named": true
+  },
+  {
+    "type": "subscript_end",
+    "named": true
+  },
+  {
+    "type": "subscript_start",
     "named": true
   },
   {
