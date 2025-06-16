@@ -1469,10 +1469,12 @@ static ParseResult parse_tilde(LexWrap *wrapper, ParseResultArray* stack) {
 
     // questionable start...
     if (char_count > 2) {
+        res.success = true;
         res.token = DO_NOT_PARSE;
-        lex_backtrack_n(wrapper, char_count - 2);
+        lex_backtrack_n(wrapper, 2);
         res.range.end = lex_current_position(wrapper);
-        return res;
+        res.length = wrapper->pos - buffer_start_pos;
+        goto func_end;
     }
 
     switch (char_count) {
@@ -1507,6 +1509,21 @@ static ParseResult parse_tilde(LexWrap *wrapper, ParseResultArray* stack) {
                                 goto func_end;
                             }
                             case 2: {
+                                //check if we can parse this next bit...
+                                lex_backtrack_n(wrapper, 1);
+                                ParseResult attempt = parse_tilde(wrapper, stack);
+                                if (attempt.success) {
+                                    last_char = lex_lookbehind(wrapper);
+                                    lookahead = lex_lookahead(wrapper);
+                                    continue;
+                                }
+                                // reaching here means it failed
+                                // idealy, this function failing puts us
+                                // right after the token in question...
+                                size_t index = stack_find(stack, &attempt.range.start, DO_NOT_PARSE, false);
+                                if (index < not_found) {
+                                    array_erase(stack, index);
+                                }
                                 // check if spaces were skipped
                                 if (skipped_whitespace) {
                                     goto func_end;
