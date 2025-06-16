@@ -1419,13 +1419,11 @@ static ParseResult parse_superscript(LexWrap *wrapper, ParseResultArray* stack) 
                     continue;
                 }
             }
-
-            last_char = lookahead;
-            lex_advance(wrapper, false);
-            lookahead = lex_lookahead(wrapper);
-
-
         }
+
+        last_char = lookahead;
+        lex_advance(wrapper, false);
+        lookahead = lex_lookahead(wrapper);
     }
 
     func_end: {
@@ -1469,7 +1467,7 @@ static ParseResult parse_tilde(LexWrap *wrapper, ParseResultArray* stack) {
         char_count++;
     }
 
-    // questionable end...
+    // questionable start...
     if (char_count > 2) {
         res.token = DO_NOT_PARSE;
         lex_backtrack_n(wrapper, char_count - 2);
@@ -1480,9 +1478,11 @@ static ParseResult parse_tilde(LexWrap *wrapper, ParseResultArray* stack) {
     switch (char_count) {
         case 1: {
             res.token = SUBSCRIPT;
+            break;
         }
         case 2: {
             res.token = STRIKETHROUGH;
+            break;
         }
     };
 
@@ -1492,7 +1492,7 @@ static ParseResult parse_tilde(LexWrap *wrapper, ParseResultArray* stack) {
     while(lookahead != '\0') {
         switch (lookahead) {
             case '~': {
-                int32_t end_char_count = 0;
+                int8_t end_char_count = 0;
                 while (lex_lookahead(wrapper) == '~') {
                     lex_advance(wrapper, false);
                     end_char_count++;
@@ -1586,13 +1586,14 @@ static ParseResult parse_tilde(LexWrap *wrapper, ParseResultArray* stack) {
                     continue;
                 }
             }
-
-            last_char = lookahead;
-            lex_advance(wrapper, false);
-            lookahead = lex_lookahead(wrapper);
-
-
         }
+
+        last_char = lookahead;
+        lex_advance(wrapper, false);
+        lookahead = lex_lookahead(wrapper);
+
+
+
     }
 
     func_end: {
