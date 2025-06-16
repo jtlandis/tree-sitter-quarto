@@ -5,7 +5,7 @@ In-line Scanners:
   * [x] **star-strong**
   * [x] ___under-strong-emph___
   * [x] ***star-strong-emph***
-  * [ ] super^script^
+  * [x] super^script^
   * [ ] sub~script~
   * [ ] ~~strikethrough~~
   * [ ] [text span]{.underline}
