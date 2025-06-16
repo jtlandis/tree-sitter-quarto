@@ -24,6 +24,10 @@ enum TokenType {
   STRONG_UNDER_END,
   SUPERSCRIPT_START,
   SUPERSCRIPT_END,
+  SUBSCRIPT_START,
+  SUBSCRIPT_END,
+  STRIKE_START,
+  STRIKE_END,
   NO_PARSE,
   ERROR, //General Emphasis
 };
@@ -36,6 +40,8 @@ enum ParseToken {
     STRONG_STAR,
     STRONG_UNDER,
     SUPERSCRIPT,
+    SUBSCRIPT,
+    STRIKETHROUGH
 };
 
 
@@ -1397,6 +1403,173 @@ static ParseResult parse_superscript(LexWrap *wrapper, ParseResultArray* stack) 
             case ' ':
             case '\t': {
                 goto func_end;
+            }
+            default: {
+                if (is_inline_synatx(lookahead)) {
+                    parse_inline(wrapper, stack, last_char);
+                    last_char = lex_lookbehind(wrapper);
+                    lookahead = lex_lookahead(wrapper);
+                    continue;
+                }
+            }
+
+            last_char = lookahead;
+            lex_advance(wrapper, false);
+            lookahead = lex_lookahead(wrapper);
+
+
+        }
+    }
+
+    func_end: {
+        if (res.success) {
+            stack_insert(stack, res);
+        } else {
+            ParseResult start = new_parse_result();
+            start.range.start = res.range.start;
+            lex_set_position(wrapper, buffer_start_pos + 1);
+            start.range.end = wrapper->curr_pos;
+            start.token = DO_NOT_PARSE;
+            start.length = 1;
+            stack_insert(stack, start);
+            // since this parse failed and we reset the position,
+            // we will remove any "NO PARSE" in the stack after
+            // this position. These could be symbols that will be
+            // complete some other syntax,
+            // example  *my **world^up side^** down*
+            // space invalidates superscripts,
+            remove_tokens_ge_pos(stack, DO_NOT_PARSE, &wrapper->curr_pos);
+        }
+        return res;
+    }
+
+}
+
+///
+static ParseResult parse_tilde(LexWrap *wrapper, ParseResultArray* stack) {
+    uint32_t buffer_start_pos = wrapper->pos;
+    ParseResult res = new_parse_result();
+    res.range.start = wrapper->curr_pos;
+
+    int32_t lookahead = lex_lookahead(wrapper);
+
+    if (lookahead != '~') {
+        return res;
+    }
+    uint8_t char_count = 0;
+    while (lex_lookahead(wrapper) == '~') {
+        lex_advance(wrapper, false);
+        char_count++;
+    }
+
+    // questionable end...
+    if (char_count > 2) {
+        res.token = DO_NOT_PARSE;
+        lex_backtrack_n(wrapper, char_count - 2);
+        res.range.end = lex_current_position(wrapper);
+        return res;
+    }
+
+    switch (char_count) {
+        case 1: {
+            res.token = SUBSCRIPT;
+        }
+        case 2: {
+            res.token = STRIKETHROUGH;
+        }
+    };
+
+    lookahead = lex_lookahead(wrapper);
+    int32_t last_char = '~';
+    bool skipped_whitespace = false;
+    while(lookahead != '\0') {
+        switch (lookahead) {
+            case '~': {
+                int32_t end_char_count = 0;
+                while (lex_lookahead(wrapper) == '~') {
+                    lex_advance(wrapper, false);
+                    end_char_count++;
+                }
+                switch (end_char_count) {
+                    case 1: {
+                        switch (char_count) {
+                            case 1: {
+                                res.success = true;
+                                res.range.end = lex_current_position(wrapper);
+                                res.length = wrapper->pos - buffer_start_pos;
+                                goto func_end;
+                            }
+                            case 2: {
+                                // check if spaces were skipped
+                                if (skipped_whitespace) {
+                                    goto func_end;
+                                }
+                                res.success = true;
+                                res.token = SUBSCRIPT;
+                                ParseResult start = new_parse_result();
+                                start.range.start = res.range.start;
+                                start.success = true;
+                                start.token = DO_NOT_PARSE;
+                                start.length = 1;
+                                stack_insert(stack, start);
+                                res.range.start.col++;
+                                start.range.end = res.range.start;
+                                res.range.end = lex_current_position(wrapper);
+                                res.length = wrapper->pos - buffer_start_pos - 1;
+                                goto func_end;
+                            }
+                        }
+                    }
+                    case 2: {
+                        switch (char_count) {
+                            case 1: {
+                                lex_backtrack_n(wrapper, 1);
+                                res.success = true;
+                                res.range.end = lex_current_position(wrapper);
+                                res.length = wrapper->pos - buffer_start_pos;
+                                goto func_end;
+                            }
+                            case 2: {
+                                res.success = true;
+                                res.range.end = lex_current_position(wrapper);
+                                res.length = wrapper->pos - buffer_start_pos;
+                                goto func_end;
+                            }
+                        }
+                    }
+                    default: {
+                        lex_backtrack_n(wrapper, end_char_count - char_count);
+                        res.success = true;
+                        res.range.end = lex_current_position(wrapper);
+                        res.length = wrapper->pos - buffer_start_pos;
+                        goto func_end;
+                    }
+                }
+
+                goto func_end;
+                break;
+            }
+            case '\n': {
+                goto func_end;
+            }
+            case '\\': {
+                lex_advance(wrapper, false);
+                lookahead = lex_lookahead(wrapper);
+                if (lookahead == '\n' || lookahead == '\\') {
+                    goto func_end;
+                }
+                lex_advance(wrapper, false);
+                lookahead = lex_lookahead(wrapper);
+                last_char = '\\';
+                continue;
+            }
+            case ' ':
+            case '\t': {
+                if (char_count == 1) {
+                    goto func_end;
+                }
+                skipped_whitespace = true;
+                break;
             }
             default: {
                 if (is_inline_synatx(lookahead)) {
