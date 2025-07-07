@@ -41,7 +41,10 @@ enum ParseToken {
     STRONG_UNDER,
     SUPERSCRIPT,
     SUBSCRIPT,
-    STRIKETHROUGH
+    STRIKETHROUGH,
+    BRACKET,
+    HYPERLINK,
+    CURLY_ATTR,
 };
 
 
@@ -447,8 +450,8 @@ static bool is_whitespace_next(TSLexer *lexer) {
 static bool is_inline_synatx(int32_t char_) {
     return char_ == '*' || char_ == '_' ||
      char_ == '^' || char_ == '~' ||
-     char_ == '`' || char_ == '@' ||
-     char_ == '[' || char_ == ']';
+     char_ == '`' || char_ == '@' ;
+     // char_ == '[' || char_ == ']';
 }
 
 // prototypes:
@@ -500,63 +503,6 @@ static ParseResult parse_inline(LexWrap *wrapper, ParseResultArray* stack, int32
     return res;
 }
 
-// /// takes a result object, and inserts appropriate DO_NOT_PARSE
-// /// tokens into the stack. optionally, it will delete the result
-// /// if the element exists in the stack
-// static size_t dont_parse_result(ParseResult *result, ParseResultArray *array, bool remove) {
-//     switch (result->token) {
-//         case EMPHASIS_STAR:
-//         case EMPHASIS_UNDER: {
-//             ParseResult emph_start = new_parse_result();
-//             emph_start.token = DO_NOT_PARSE;
-//             emph_start.range.start = result->range.start;
-//             ParseResult emph_end = new_parse_result();
-//             emph_end.token = DO_NOT_PARSE;
-//             emph_end.range.end = result->range.end;
-//             emph_start.range.end = emph_start.range.start;
-//             emph_start.length = 1;
-//             emph_start.range.end.col += 1;
-//             emph_end.range.start = emph_end.range.end;
-//             emph_end.range.start.col -= 1;
-//             emph_end.length = 1;
-//             stack_insert(array, emph_start);
-//             stack_insert(array, emph_end);
-//             break;
-//         }
-//         case STRONG_STAR:
-//         case STRONG_UNDER: {
-//             ParseResult strong_start = new_parse_result();
-//             strong_start.token = DO_NOT_PARSE;
-//             strong_start.range.start = result->range.start;
-//             ParseResult strong_end = new_parse_result();
-//             strong_end.token = DO_NOT_PARSE;
-//             strong_end.range.end = result->range.end;
-//             strong_start.range.end = strong_start.range.start;
-//             strong_start.length = 2;
-//             strong_start.range.end.col += 2;
-//             strong_end.range.start = strong_end.range.end;
-//             strong_end.range.start.col -= 2;
-//             strong_end.length = 2;
-//             stack_insert(array, strong_start);
-//             stack_insert(array, strong_end);
-//         }
-
-//         default: {
-
-//         }
-//     }
-
-//     if (remove) {
-//         size_t index = stack_find_exact(array, result);
-//         if (index < not_found) {
-//             array_erase(array, index);
-//             return index;
-//         }
-//     }
-
-
-//     return not_found;
-// }
 
 static void dont_parse_next_n(LexWrap *wrapper, ParseResultArray *stack, uint32_t n) {
     if (n > 0) {
@@ -570,6 +516,271 @@ static void dont_parse_next_n(LexWrap *wrapper, ParseResultArray *stack, uint32_
         result.success = true;
         result.token = DO_NOT_PARSE;
         stack_insert(stack, result);
+    }
+
+}
+
+static ParseResult parse_parenthesis(LexWrap *wrapper, ParseResultArray *stack) {
+    uint32_t buffer_start_pos = wrapper->pos;
+    ParseResult res = new_parse_result();
+    res.range.start = wrapper->curr_pos;
+    if (lex_lookahead(wrapper) != '(') {
+        return res;
+    }
+
+    lex_advance(wrapper, false);
+    int32_t lookahead = lex_lookahead(wrapper);
+    int32_t last_char = '(';
+    uint8_t new_line_count = 0;
+    // simply walk through the parenthesis
+    while(lookahead != '\0') {
+
+        switch (lookahead) {
+            case ')': {
+                lex_advance(wrapper, false);
+                res.range.end = wrapper->curr_pos;
+                res.length = wrapper->pos - buffer_start_pos;
+                res.token = HYPERLINK;
+                res.success = true;
+                goto return_res;
+            }
+            case '\n': {
+                new_line_count++;
+                if (new_line_count > 1) {
+                    // fprintf(stderr, "found too many '\\n' characters. returning...\n");
+                    goto return_res;
+                }
+                break;
+            }
+            case '\\': {
+                // treat next character as literal - do not
+                // parse it
+                lex_advance(wrapper, false);
+                break;
+            }
+            default: {
+                new_line_count = 0;
+                break;
+            }
+        }
+
+        lex_advance(wrapper, false);
+        lookahead = lex_lookahead(wrapper);
+
+    }
+
+    return_res: {
+
+        if (res.success) {
+            stack_insert(stack, res);
+        } else {
+            // fprintf(stderr, "failed parsing: ");
+            // print_parse_result(&res);
+            // we do not know if result ranges are correct...
+            ParseResult start = new_parse_result();
+            start.token = DO_NOT_PARSE;
+            start.range.start = res.range.start;
+            start.range.end = res.range.start;
+            start.range.end.col ++;
+            start.success = true;
+            start.length = 1;
+            stack_insert(stack, start);
+        }
+        // fprintf(stderr, "parser is at position: ");
+        // debug_pos(&wrapper->curr_pos);
+        // fprintf(stderr, "\n");
+        return res;
+    }
+}
+
+static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
+    uint32_t buffer_start_pos = wrapper->pos;
+    ParseResult res = new_parse_result();
+    res.range.start = wrapper->curr_pos;
+    if (lex_lookahead(wrapper) != '{') {
+        return res;
+    }
+
+    lex_advance(wrapper, false);
+    int32_t lookahead = lex_lookahead(wrapper);
+    int32_t last_char = '(';
+    uint8_t new_line_count = 0;
+    // simply walk through the parenthesis
+    while(lookahead != '\0') {
+
+        switch (lookahead) {
+            case '}': {
+                lex_advance(wrapper, false);
+                res.range.end = wrapper->curr_pos;
+                res.length = wrapper->pos - buffer_start_pos;
+                res.token = CURLY_ATTR;
+                res.success = true;
+                goto return_res;
+            }
+            case '\n': {
+                new_line_count++;
+                if (new_line_count > 1) {
+                    // fprintf(stderr, "found too many '\\n' characters. returning...\n");
+                    goto return_res;
+                }
+                break;
+            }
+            case '\\': {
+                // treat next character as literal - do not
+                // parse it
+                lex_advance(wrapper, false);
+                break;
+            }
+            default: {
+                new_line_count = 0;
+                break;
+            }
+        }
+
+        lex_advance(wrapper, false);
+        lookahead = lex_lookahead(wrapper);
+
+    }
+
+    return_res: {
+
+        if (res.success) {
+            stack_insert(stack, res);
+        } else {
+            // fprintf(stderr, "failed parsing: ");
+            // print_parse_result(&res);
+            // we do not know if result ranges are correct...
+            ParseResult start = new_parse_result();
+            start.token = DO_NOT_PARSE;
+            start.range.start = res.range.start;
+            start.range.end = res.range.start;
+            start.range.end.col ++;
+            start.success = true;
+            start.length = 1;
+            stack_insert(stack, start);
+        }
+        // fprintf(stderr, "parser is at position: ");
+        // debug_pos(&wrapper->curr_pos);
+        // fprintf(stderr, "\n");
+        return res;
+    }
+}
+
+/// This should parse [foo](bar) or [foo]{bar} patterns
+static ParseResult parse_bracket(LexWrap *wrapper, ParseResultArray *stack, uint8_t *bracket_count) {
+
+    uint32_t buffer_start_pos = wrapper->pos;
+    ParseResult res = new_parse_result();
+    res.range.start = wrapper->curr_pos;
+    if (lex_lookahead(wrapper) != '[') {
+        return res;
+    }
+    // move past bracket
+    lex_advance(wrapper, false);
+    bracket_count++;
+    int32_t lookahead = lex_lookahead(wrapper);
+    int32_t last_char = '[';
+    uint32_t last_lex_pos = 0;
+    uint8_t end_char_count = 0;
+    uint8_t new_line_count = 0;
+    while(lookahead != '\0') {
+        switch (lookahead) {
+            case ']': {
+                lex_advance(wrapper, false);
+                bracket_count--;
+                Pos bracket_close_pos = lex_current_position(wrapper);
+                uint32_t bracket_buffer_pos = wrapper->pos;
+                // determine if this is a hyperlink,
+                // or some span
+                lookahead = lex_lookahead(wrapper);
+                switch (lookahead) {
+                    case '(': {
+                        // parse parethensis
+                        ParseResult attempt = parse_parenthesis(wrapper, stack);
+                        // if it was successful, finish up bracket Parse
+                        if (attempt.success) {
+                            res.range.end = bracket_close_pos;
+                            res.length = bracket_buffer_pos - buffer_start_pos;
+                            res.success = true;
+                            res.token = BRACKET;
+                            goto return_res;
+                        }
+                        break;
+                    }
+                    case '{': {
+                        // parse curly attributes
+                        ParseResult attempt = parse_curly_attr(wrapper, stack);
+                        // if it was successful, finish up bracket Parse
+                        if (attempt.success) {
+                            res.range.end = bracket_close_pos;
+                            res.length = bracket_buffer_pos - buffer_start_pos;
+                            res.success = true;
+                            res.token = BRACKET;
+                            goto return_res;
+                        }
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
+                // we reach here we have failed to parse beyond the brackets
+                ParseResult close = new_parse_result();
+                close.range.end = bracket_close_pos;
+                close.range.start = bracket_close_pos;
+                close.range.start.col--;
+                close.length = 1;
+                close.success = true;
+                close.token = DO_NOT_PARSE;
+                stack_insert(stack, close);
+                goto return_res;
+                break;
+            }
+            default: {
+                // check if inline symbol
+                new_line_count = 0;
+                if (is_inline_synatx(lookahead)) {
+                    ParseResult attempt = parse_inline(wrapper, stack, last_char);
+                    if (!attempt.success) {
+                        // the success or failure of some inline here does NOT mean
+                        // our current one should fail...
+                        // return res;
+                    }
+                    lookahead = lex_lookahead(wrapper);
+                    last_char = lex_lookbehind(wrapper);
+                    continue;
+                }
+                break;
+            }
+        }
+
+        last_char = lookahead;
+        lex_advance(wrapper, false);
+        lookahead = lex_lookahead(wrapper);
+
+    }
+
+    return_res: {
+
+        if (res.success) {
+            stack_insert(stack, res);
+        } else {
+            // fprintf(stderr, "failed parsing: ");
+            // print_parse_result(&res);
+            // we do not know if result ranges are correct...
+            ParseResult start = new_parse_result();
+            start.token = DO_NOT_PARSE;
+            start.range.start = res.range.start;
+            start.range.end = res.range.start;
+            start.range.end.col ++;
+            start.success = true;
+            start.length = 1;
+            stack_insert(stack, start);
+        }
+        // fprintf(stderr, "parser is at position: ");
+        // debug_pos(&wrapper->curr_pos);
+        // fprintf(stderr, "\n");
+        return res;
     }
 
 }
@@ -1639,7 +1850,7 @@ static ParseResult parse_tilde(LexWrap *wrapper, ParseResultArray* stack) {
 
 
 typedef struct {
-   bool foo;
+  uint8_t bracket_count;
   Pos pos;
   ParseResultArray results; // State to track if we're inside an emphasis block
 } ScannerState;
@@ -1690,6 +1901,8 @@ unsigned tree_sitter_quarto_external_scanner_serialize(void *payload, char *buff
   ScannerState *state = (ScannerState *)payload;
   // return 0;
   size_t offset = 0;
+  memcpy(buffer + offset, &state->bracket_count, sizeof(uint8_t));
+  offset += sizeof(uint8_t);
   // get the position
   memcpy(buffer + offset, &state->pos.row, sizeof(uint32_t));
   offset += sizeof(uint32_t);
@@ -1723,6 +1936,8 @@ void tree_sitter_quarto_external_scanner_deserialize(void *payload, const char *
     ScannerState *state = (ScannerState *)payload;
     size_t offset = 0;
 
+    memcpy(&state->bracket_count, buffer + offset, sizeof(uint8_t));
+    offset += sizeof(uint8_t);
 //     fprintf(stderr, "writing row bits... ");
     memcpy(&state->pos.row, buffer + offset, sizeof(uint32_t));
     offset += sizeof(uint32_t);
@@ -1786,7 +2001,7 @@ void tree_sitter_quarto_external_scanner_deserialize(void *payload, const char *
 /// if some internal parse occurs in which we pass a new line, that is fine
 ///
 static void parse_new_line(ScannerState *state, TSLexer *lexer) {
-    // fprintf(stderr, "- calling: parse_new_line()\n");
+    fprintf(stderr, "- calling: parse_new_line()\n");
     // the position of the state should ALWAYS be correct when this
     // function is called.
     LexWrap wrapper = new_lexer(lexer, state->pos);
@@ -1882,8 +2097,8 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
 
   ScannerState *state = (ScannerState *)payload;
   // print_scanner_state(state);
-  // fprintf(stderr, "scanner invoked before: %c - is alpha: %i\n",
-      // lexer->lookahead, isalnum((int)lexer->lookahead));
+  fprintf(stderr, "scanner invoked before: %c - is alpha: %i\n",
+      lexer->lookahead, isalnum((int)lexer->lookahead));
   // print_valid_symbols(valid_symbols);
   if (valid_symbols[ERROR]) {
       // fprintf(stderr, "ERROR is a valid symbol. do not handle\n");
