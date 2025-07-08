@@ -30,6 +30,8 @@ enum TokenType {
   STRIKE_END,
   BRACKET_START,
   BRACKET_END,
+  LINK_START,
+  LINK_END,
   CURLY_START,
   CURLY_END,
   NO_PARSE,
@@ -82,7 +84,8 @@ enum RangeType {
     OVERLAP,
     CHILD,
     PARENT,
-    DISJOINT_GREATER
+    DISJOINT_GREATER,
+    IDENTICAL
 };
 
 typedef struct LexWrap {
@@ -283,9 +286,20 @@ static ParseResult new_parse_result() {
     return obj;
 }
 
+static ParseResult new_parse_result_from(ParseResult *other) {
+    ParseResult obj;
+    obj.success = other->success;
+    obj.length = other->length;
+    obj.range = other->range;
+    obj.token = other->token;
+    return obj;
+}
+
 typedef Array(ParseResult) ParseResultArray;
 // typedef Array(uint32_t) IndexArray;
 
+
+/// checks if x is within (inclusive) the range y
 static bool pos_within_range(Pos *x, Range *y) {
     return pos_le(x, &y->end) && pos_ge(x, &y->start);
 }
@@ -305,18 +319,20 @@ static bool range_disjoint(Range *x, Range *y) {
 static enum RangeType classify_range(Range *x, Range *y) {
     // |----|
     //        |----|
-
+    if (pos_eq(&x->end, &y->end) && pos_eq(&x->start, &y->start)) {
+        return IDENTICAL;
+    }
     if (pos_le(&x->end, &y->start)) {
         return DISJOINT_LESS;
     }
-    if (pos_le(&x->end, &y->end)) {
+    if (pos_lt(&x->end, &y->end)) {
         if (pos_ge(&x->start, &y->start)) {
             return CHILD;
         } else {
             return OVERLAP;
         }
     } else {
-        if (pos_lt(&x->start, &y->start)) {
+        if (pos_le(&x->start, &y->start)) {
             return PARENT;
         }
 
@@ -336,21 +352,28 @@ static void print_parse_result(const ParseResult *res) {
     fprintf(stderr, ", token: %d }\n", res->token);
 }
 
-// static void print_stack(ParseResultArray *stack) {
-//     for (uint32_t i = 0; i < stack->size; i++) {
-//         fprintf(stderr, "\t");
-//         print_parse_result(&stack->contents[i]);
-//     }
-// }
+static void print_stack(ParseResultArray *stack) {
+    for (uint32_t i = 0; i < stack->size; i++) {
+        fprintf(stderr, "\t");
+        print_parse_result(&stack->contents[i]);
+    }
+}
 
-static size_t stack_insert(ParseResultArray* array, ParseResult element) {
+
+
+static size_t stack_insert_(ParseResultArray* array, ParseResult element, size_t start_index) {
+    // fprintf(stderr, "attempting to insert:\n");
+    // print_parse_result(&element);
+    // fprintf(stderr, "current stack:\n");
+    // print_stack(array);
     size_t out = not_found;
     if (array->size == 0) {
         array_push(array, element);
         out = 0;
         goto func_end;
     } else {
-        for (size_t i = 0; i < array->size; i++) {
+        for (size_t i = start_index; i < array->size; i++) {
+            // fprintf(stderr, "loop iter %zu\n", i);
             ParseResult *result = &array->contents[i];
             switch (classify_range(&element.range, &result->range)) {
                 case OVERLAP: {
@@ -375,14 +398,42 @@ static size_t stack_insert(ParseResultArray* array, ParseResult element) {
                     goto func_end;
                 }
                 case DISJOINT_GREATER: {
-                    array_insert(array, i + 1, element);
-                    out = i + 1;
+                    // fprintf(stderr, "attempting to find non-dijoint_greater\n");
+                    // keep going until next element is end OR
+                    // until this element is not DISJOIN_GREATER with
+                    // the next element
+                    for (size_t j = i; j < array->size; j++) {
+                        // fprintf(stderr, "inner loop iter %zu\n", j);
+                        result = &array->contents[j];
+                        switch (classify_range(&element.range, &result->range)) {
+                            case DISJOINT_GREATER: {
+                                break;
+                            }
+                            default: {
+                                // fprintf(stderr, "found a non-disjoint_greater relationship with index %zu\n", j);
+                                i = j;
+                                i--;
+                                goto continue_outer;
+                            }
+                        }
+                    }
+                    out = array->size;
+                    array_push(array, element);
+                    // array_insert(array, i + 1, element);
+                    // out = i + 1;
                     goto func_end;
                 }
                 case CHILD: {
                     continue;
                 }
+                case IDENTICAL: {
+                    goto func_end;
+                }
             }
+
+            continue_outer: {
+                // fprintf(stderr, "inner loop end index: %zu\n", i);
+            };
         }
     }
 
@@ -397,6 +448,10 @@ static size_t stack_insert(ParseResultArray* array, ParseResult element) {
     }
 
 
+}
+
+static size_t stack_insert(ParseResultArray* array, ParseResult element) {
+    return stack_insert_(array, element, 0);
 }
 
 
@@ -421,11 +476,22 @@ static size_t stack_find(ParseResultArray *array, Pos *pos, enum ParseToken toke
     return not_found;
 }
 
-static size_t stack_find_within(ParseResultArray *array, Pos *pos, enum ParseToken token) {
+static size_t stack_find_token_contains_pos(ParseResultArray *array, Pos *pos, enum ParseToken token) {
      ParseResult *element;
     for (size_t i = 0; i < array->size; i++) {
         element = &array->contents[i];
         if (element->token == token && pos_within_range(pos, &element->range)) {
+            return i;
+        }
+    }
+    return not_found;
+}
+
+static size_t stack_find_token_within_range(ParseResultArray *array, enum ParseToken token, Range *range) {
+    ParseResult *element;
+    for (size_t i = 0; i < array->size; i++) {
+        element = &array->contents[i];
+        if (element->token == token && range_within(&element->range, range)) {
             return i;
         }
     }
@@ -445,6 +511,35 @@ static size_t stack_find_exact(ParseResultArray *array,  ParseResult *res) {
    return not_found;
 }
 
+/// finds some element in ParseResultArray and removes said element from
+/// the stack. Also adds "DO_NOT_PARSE" tokens for appropraite syntax
+static void stack_dont_parse(ParseResultArray* array, size_t index) {
+    assert(index < array->size);
+    ParseResult *element = &array->contents[index];
+    switch (element->token) {
+        case LINK:
+        case BRACKET: {
+            ParseResult start = new_parse_result_from(element);
+            start.range.end = start.range.start;
+            start.range.end.col++;
+            start.length = 1;
+            start.token = DO_NOT_PARSE;
+            ParseResult end = new_parse_result_from(&start);
+            end.range.end = element->range.end;
+            end.range.start = end.range.end;
+            end.range.start.col--;
+            array_erase(array, index);
+            size_t i = stack_insert(array, start);
+            stack_insert_(array, end, i);
+            break;
+        }
+        default: {
+            break;
+        }
+
+    }
+}
+
 
 static bool is_whitespace(int32_t char_) {
     return char_ == ' ' || char_ == '\t' || char_ == '\n';
@@ -456,8 +551,8 @@ static bool is_whitespace_next(TSLexer *lexer) {
 static bool is_inline_synatx(int32_t char_) {
     return char_ == '*' || char_ == '_' ||
      char_ == '^' || char_ == '~' ||
-     char_ == '`' || char_ == '@' ;
-     // char_ == '[' || char_ == ']';
+     char_ == '`' || char_ == '@' ||
+     char_ == '['; //|| char_ == ']';
 }
 
 // prototypes:
@@ -710,14 +805,32 @@ static ParseResult parse_bracket(LexWrap *wrapper, ParseResultArray *stack, uint
                         ParseResult attempt = parse_parenthesis(wrapper, stack);
                         // if it was successful, finish up bracket Parse
                         if (attempt.success && attempt.token == LINK) {
+
                             res.range.end = bracket_close_pos;
                             res.length = bracket_buffer_pos - buffer_start_pos;
                             res.success = true;
                             res.token = BRACKET;
-                            stack_insert(stack, res);
+                            ParseResult bracket = new_parse_result_from(&res);
                             res.range.end = lex_current_position(wrapper);
                             res.length = wrapper->pos - buffer_start_pos;
                             res.token = HYPERLINK;
+                            // before we return, it is possible that the new hyperlink
+                            // wraps around another hyperlink... making the inner invalid.
+                            size_t index = stack_find_token_within_range(stack, HYPERLINK, &res.range);
+                            if (index < not_found) {
+                                ParseResult *to_remove = array_get(stack, index);
+                                Range element_range = to_remove->range;
+                                array_erase(stack, index);
+                                size_t link_index = stack_find_token_within_range(stack, LINK, &element_range);
+                                if (link_index < not_found) {
+                                    stack_dont_parse(stack, link_index);
+                                }
+                                size_t bracket_index = stack_find_token_within_range(stack, BRACKET, &element_range);
+                                if (bracket_index < not_found) {
+                                    stack_dont_parse(stack, bracket_index);
+                                }
+                            }
+                            stack_insert(stack, bracket);
                             goto return_res;
                         }
                         break;
@@ -820,6 +933,7 @@ static ParseResult parse_bracket(LexWrap *wrapper, ParseResultArray *stack, uint
         // fprintf(stderr, "parser is at position: ");
         // debug_pos(&wrapper->curr_pos);
         // fprintf(stderr, "\n");
+        // print_stack(stack);
         return res;
     }
 
@@ -2088,7 +2202,7 @@ void tree_sitter_quarto_external_scanner_deserialize(void *payload, const char *
 /// if some internal parse occurs in which we pass a new line, that is fine
 ///
 static void parse_new_line(ScannerState *state, TSLexer *lexer) {
-    fprintf(stderr, "- calling: parse_new_line()\n");
+    // fprintf(stderr, "- calling: parse_new_line()\n");
     // the position of the state should ALWAYS be correct when this
     // function is called.
     LexWrap wrapper = new_lexer(lexer, state->pos);
@@ -2184,8 +2298,8 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
 
   ScannerState *state = (ScannerState *)payload;
   // print_scanner_state(state);
-  fprintf(stderr, "scanner invoked before: %c - is alpha: %i\n",
-      lexer->lookahead, isalnum((int)lexer->lookahead));
+  // fprintf(stderr, "scanner invoked before: %c - is alpha: %i\n",
+  //     lexer->lookahead, isalnum((int)lexer->lookahead));
   // print_valid_symbols(valid_symbols);
   if (valid_symbols[ERROR]) {
       // fprintf(stderr, "ERROR is a valid symbol. do not handle\n");
@@ -2224,12 +2338,17 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
     return true;
   }
 
+  state->pos.col = lexer->get_column(lexer);
+  // make the wrapper object once
+  LexWrap wrapper = new_lexer(lexer, state->pos);
+  // should we consider only looking at this one position?
+  // int32_t lookahead = lexer->lookahead;
+
   // handle NO_PARSE -
   // this symbol can occur anywhere, and if it
   // appears it means that this section was already
   // pre-parsed and willl show up literally.
   if (valid_symbols[NO_PARSE]) {
-      state->pos.col = lexer->get_column(lexer);
       size_t index = stack_find(&state->results, &state->pos, DO_NOT_PARSE, false);
       if (index < not_found) {
           ParseResult *res = &state->results.contents[index];
@@ -2244,7 +2363,6 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
 
   } else {
       // just check if this is something we should skip
-      state->pos.col = lexer->get_column(lexer);
       size_t index = stack_find(&state->results, &state->pos, DO_NOT_PARSE, false);
       if (index < not_found) {
           // ParseResult *res = &state->results.contents[index];
@@ -2260,9 +2378,6 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       valid_symbols[STRONG_STAR_END]
   )) {
       // fprintf(stderr, "looking for strong or emph star\n");
-      // get current start position
-      state->pos.col = lexer->get_column(lexer);
-      LexWrap wrapper = new_lexer(lexer, state->pos);
       lex_advance(&wrapper, false);
       // possible end if just an emphasis
       lexer->mark_end(lexer);
@@ -2368,8 +2483,6 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
   )) {
       // fprintf(stderr, "looking for strong or emph under\n");
       // get current start position
-      state->pos.col = lexer->get_column(lexer);
-      LexWrap wrapper = new_lexer(lexer, state->pos);
       lex_advance(&wrapper, false);
       // possible end if just an emphasis
       lexer->mark_end(lexer);
@@ -2472,8 +2585,6 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
 
   if (lexer->lookahead == '^' && (valid_symbols[SUPERSCRIPT_START] ||
       valid_symbols[SUPERSCRIPT_END])) {
-          state->pos.col = lexer->get_column(lexer);
-          LexWrap wrapper = new_lexer(lexer, state->pos);
           lex_advance(&wrapper, false);
           // possible end
           lexer->mark_end(lexer);
@@ -2500,8 +2611,6 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       valid_symbols[SUBSCRIPT_END] ||
       valid_symbols[STRIKE_START] ||
       valid_symbols[STRIKE_END])) {
-          state->pos.col = lexer->get_column(lexer);
-          LexWrap wrapper = new_lexer(lexer, state->pos);
           lex_advance(&wrapper, false);
           // possible end
           lexer->mark_end(lexer);
@@ -2547,9 +2656,54 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
               }
           }
       }
-  
+
   if (lexer->lookahead == '[' && valid_symbols[BRACKET_START]) {
-      
+      size_t index = stack_find(&state->results, &wrapper.curr_pos, BRACKET, false);
+      if (index < not_found) {
+          lexer->result_symbol = BRACKET_START;
+          lex_advance(&wrapper, false);
+          lexer->mark_end(lexer);
+          return true;
+      }
+  }
+
+  if (lexer->lookahead == '(' && valid_symbols[LINK_START]) {
+      size_t index = stack_find(&state->results, &wrapper.curr_pos, LINK, false);
+      if (index < not_found) {
+          lexer->result_symbol = LINK_START;
+          lex_advance(&wrapper, false);
+          lexer->mark_end(lexer);
+          return true;
+      }
+  }
+
+  if (lexer->lookahead == ']' && valid_symbols[BRACKET_END]) {
+      lex_advance(&wrapper, false);
+      lexer->mark_end(lexer);
+      size_t index = stack_find(&state->results, &wrapper.curr_pos, BRACKET, true);
+      if (index < not_found) {
+          lexer->result_symbol = BRACKET_END;
+          array_erase(&state->results, index);
+          return true;
+      }
+  }
+
+  if (lexer->lookahead == ')' && valid_symbols[LINK_END]) {
+      lex_advance(&wrapper, false);
+      lexer->mark_end(lexer);
+      size_t index = stack_find(&state->results, &wrapper.curr_pos, LINK, true);
+      if (index < not_found) {
+          lexer->result_symbol = LINK_END;
+          array_erase(&state->results, index);
+          // confirm index-- is HYPERLINK
+          if (index > 0) {
+              index--;
+              if (state->results.contents[index].token == HYPERLINK) {
+                  array_erase(&state->results, index);
+              }
+          }
+          return true;
+      }
   }
 
   return false; // No token recognized
