@@ -39,6 +39,10 @@
           "named": true
         },
         {
+          "type": "hyperlink",
+          "named": true
+        },
+        {
           "type": "literal",
           "named": true
         },
@@ -121,6 +125,10 @@
           "named": true
         },
         {
+          "type": "hyperlink",
+          "named": true
+        },
+        {
           "type": "line_end",
           "named": true
         },
@@ -169,6 +177,10 @@
       "types": [
         {
           "type": "emph",
+          "named": true
+        },
+        {
+          "type": "hyperlink",
           "named": true
         },
         {
@@ -223,6 +235,10 @@
           "named": true
         },
         {
+          "type": "hyperlink",
+          "named": true
+        },
+        {
           "type": "line_end",
           "named": true
         },
@@ -271,6 +287,10 @@
       "types": [
         {
           "type": "emph",
+          "named": true
+        },
+        {
+          "type": "hyperlink",
           "named": true
         },
         {
@@ -325,6 +345,10 @@
           "named": true
         },
         {
+          "type": "hyperlink",
+          "named": true
+        },
+        {
           "type": "line_end",
           "named": true
         },
@@ -376,7 +400,86 @@
           "named": true
         },
         {
+          "type": "hyperlink",
+          "named": true
+        },
+        {
           "type": "line_end",
+          "named": true
+        },
+        {
+          "type": "literal",
+          "named": true
+        },
+        {
+          "type": "puncuation",
+          "named": true
+        },
+        {
+          "type": "striketrhough",
+          "named": true
+        },
+        {
+          "type": "strong",
+          "named": true
+        },
+        {
+          "type": "subscript",
+          "named": true
+        },
+        {
+          "type": "superscript",
+          "named": true
+        },
+        {
+          "type": "symbols",
+          "named": true
+        },
+        {
+          "type": "word",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "hyperlink",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "bracket_end",
+          "named": true
+        },
+        {
+          "type": "bracket_start",
+          "named": true
+        },
+        {
+          "type": "emph",
+          "named": true
+        },
+        {
+          "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "line_end",
+          "named": true
+        },
+        {
+          "type": "link",
+          "named": true
+        },
+        {
+          "type": "link_end",
+          "named": true
+        },
+        {
+          "type": "link_start",
           "named": true
         },
         {
@@ -444,6 +547,10 @@
       "types": [
         {
           "type": "emph",
+          "named": true
+        },
+        {
+          "type": "hyperlink",
           "named": true
         },
         {
@@ -603,6 +710,10 @@
           "named": true
         },
         {
+          "type": "hyperlink",
+          "named": true
+        },
+        {
           "type": "literal",
           "named": true
         },
@@ -655,6 +766,10 @@
       "types": [
         {
           "type": "emph",
+          "named": true
+        },
+        {
+          "type": "hyperlink",
           "named": true
         },
         {
@@ -713,6 +828,10 @@
           "named": true
         },
         {
+          "type": "hyperlink",
+          "named": true
+        },
+        {
           "type": "literal",
           "named": true
         },
@@ -765,6 +884,10 @@
       "types": [
         {
           "type": "emph",
+          "named": true
+        },
+        {
+          "type": "hyperlink",
           "named": true
         },
         {
@@ -843,6 +966,14 @@
     "named": false
   },
   {
+    "type": "bracket_end",
+    "named": true
+  },
+  {
+    "type": "bracket_start",
+    "named": true
+  },
+  {
     "type": "colon",
     "named": true
   },
@@ -873,6 +1004,18 @@
   },
   {
     "type": "line_end",
+    "named": true
+  },
+  {
+    "type": "link",
+    "named": true
+  },
+  {
+    "type": "link_end",
+    "named": true
+  },
+  {
+    "type": "link_start",
     "named": true
   },
   {

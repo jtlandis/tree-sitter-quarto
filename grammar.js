@@ -33,6 +33,12 @@ module.exports = grammar({
     $.subscript_end,
     $.strike_start,
     $.strike_end,
+    $.bracket_start,
+    $.bracket_end,
+    $.link_start,
+    $.link_end,
+    $.curly_start,
+    $.curly_end,
     $._no_parse,
     $._unused_error,
   ],
@@ -73,6 +79,7 @@ module.exports = grammar({
           $.superscript,
           $.subscript,
           $.striketrhough,
+          $.hyperlink,
           alias($._no_parse, $.literal),
         ),
       ), //, $.whitespace)), //prec(1, repeat1(choice($.word, $.whitespace))),
@@ -183,6 +190,17 @@ module.exports = grammar({
       seq($.superscript_start, $._line_content, $.superscript_end),
     subscript: ($) => seq($.subscript_start, $._line_content, $.subscript_end),
     striketrhough: ($) => seq($.strike_start, $._line_content, $.strike_end),
+    hyperlink: ($) =>
+      seq(
+        $.bracket_start,
+        repeat(prec.left(seq($._line_content, repeat($.line_end)))),
+        $.bracket_end,
+        $.link_start,
+        $.link,
+        $.link_end,
+      ),
+    link: ($) => /[^)]+/,
+    // hyperlink: ($) => seq("[", $._line_content, "]", "(", /[^)]+/, ")"),
   },
 
   conflicts: ($) => [
