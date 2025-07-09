@@ -8,9 +8,9 @@ In-line Scanners:
   * [x] super^script^
   * [x] sub~script~
   * [x] ~~strikethrough~~
-  * [ ] [text span]{.underline}
-  * [ ] [web link](https://www.google.com)
-  * [ ] `code block`
+  * [x] [text span]{.underline}
+  * [x] [web link](https://www.google.com)
+  * [ ] `verbatim`
   * [ ] `` `literal looking` ``
   * [ ] citation links
 
@@ -22,3 +22,16 @@ Other scanner options:
 
 When considering underscore and star syntax together, the parse_inline function
 may need to consider symbols prior. (more maybe just backtrack?)
+
+
+NOTES:
+
+The quarto docs state that attributes are not allowed unless they are in a specific order. I am finding this not to be the case for my quarto version (1.7.31).
+
+
+````qmd
+
+<!-- should not work -->
+[some text]{.mark #id}
+
+````
