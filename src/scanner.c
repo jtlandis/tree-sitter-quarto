@@ -12,6 +12,7 @@ size_t not_found = SIZE_MAX;
 uint32_t max_unsized = -1;
 
 enum TokenType {
+  EMPTY,
   LINE_START,
   LINE_END,        // Token type for line_end
   EMPHASIS_STAR_START,  // Token type for emphasis_start
@@ -34,6 +35,10 @@ enum TokenType {
   LINK_END,
   CURLY_START,
   CURLY_END,
+  ATTR_ID,
+  ATTR_CLASS,
+  ATTR_KEY,
+  ATTR_VALUE,
   NO_PARSE,
   ERROR, //General Emphasis
 };
@@ -41,6 +46,7 @@ enum TokenType {
 enum ParseToken {
     NONE,
     DO_NOT_PARSE,
+    EMPTY_TOKEN,
     EMPHASIS_STAR,
     EMPHASIS_UNDER,
     STRONG_STAR,
@@ -53,6 +59,11 @@ enum ParseToken {
     CURLY_ATTR,
     HYPERLINK,
     SPAN,
+    ID_ATTR,
+    CLASS_ATTR,
+    KEY_ATTR,
+    VALUE_ATTR,
+
 };
 
 
@@ -476,6 +487,26 @@ static size_t stack_find(ParseResultArray *array, Pos *pos, enum ParseToken toke
     return not_found;
 }
 
+static size_t stack_find_any(ParseResultArray *array, Pos *pos, bool end) {
+    ParseResult *element;
+    if (end) {
+        for (size_t i = 0; i < array->size; i++) {
+            element = &array->contents[i];
+            if (pos_eq(&element->range.end, pos)) {
+                return i;
+            }
+        }
+    } else {
+        for (size_t i = 0; i < array->size; i++) {
+            element = &array->contents[i];
+            if (pos_eq(&element->range.start, pos)) {
+                return i;
+            }
+        }
+    }
+    return not_found;
+}
+
 static size_t stack_find_token_contains_pos(ParseResultArray *array, Pos *pos, enum ParseToken token) {
      ParseResult *element;
     for (size_t i = 0; i < array->size; i++) {
@@ -638,6 +669,17 @@ static ParseResult parse_parenthesis(LexWrap *wrapper, ParseResultArray *stack) 
     int32_t lookahead = lex_lookahead(wrapper);
     int32_t last_char = '(';
     uint8_t new_line_count = 0;
+    if (lookahead == ')') {
+        // insert empty token
+        ParseResult empty = new_parse_result(wrapper->curr_pos, wrapper->curr_pos, EMPTY_TOKEN, 0, true);
+        stack_insert(stack, empty);
+        lex_advance(wrapper, false);
+        res.range.end = wrapper->curr_pos;
+        res.length = wrapper->pos - buffer_start_pos;
+        res.token = LINK;
+        res.success = true;
+        goto return_res;
+    }
     // simply walk through the parenthesis
     while(lookahead != '\0') {
 
@@ -706,16 +748,27 @@ static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
     if (lex_lookahead(wrapper) != '{') {
         return res;
     }
-
     lex_advance(wrapper, false);
     int32_t lookahead = lex_lookahead(wrapper);
-    int32_t last_char = '(';
+    int32_t last_char = '{';
     uint8_t new_line_count = 0;
+    ParseResult item = empty_parse_result();
+    item.range.start = wrapper->curr_pos;
+    item.token = EMPTY_TOKEN;
+    uint32_t buffer_item_pos = wrapper->pos;
+    bool encountered_default = false;
+    fprintf(stderr, "about to start parsing - first item is '%c'\n", lookahead);
     // simply walk through the parenthesis
     while(lookahead != '\0') {
-
+        fprintf(stderr, "iter - '%c'\n", lookahead);
         switch (lookahead) {
             case '}': {
+                item.range.end = wrapper->curr_pos;
+                item.length = wrapper->pos - buffer_item_pos;
+                if (item.token != NONE) {
+                    stack_insert(stack, item);
+                    print_stack(stack);
+                }
                 lex_advance(wrapper, false);
                 res.range.end = wrapper->curr_pos;
                 res.length = wrapper->pos - buffer_start_pos;
@@ -731,13 +784,134 @@ static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
                 }
                 break;
             }
+            case '=': {
+                switch (item.token) {
+                    case KEY_ATTR: {
+                        item.range.end = wrapper->curr_pos;
+                        item.length = wrapper->pos - buffer_item_pos;
+                        ParseResult item_clone = new_parse_result_from(&item);
+                        lex_advance(wrapper, false);
+                        lookahead = lex_lookahead(wrapper);
+                        buffer_item_pos = wrapper->pos;
+                        item.range.start = lex_current_position(wrapper);
+                        item.token = VALUE_ATTR;
+                        if (lookahead == ' ' || lookahead == '\t') {
+                            return res;
+                        }
+                        switch (lookahead) {
+                            case '"': {
+                                lex_advance(wrapper, false);
+                                lookahead = lex_lookahead(wrapper);
+                                while (lookahead != '"') {
+                                    lex_advance(wrapper, false);
+                                    lookahead = lex_lookahead(wrapper);
+                                }
+                                lex_advance(wrapper, false);
+                            }
+                            case '\'': {
+                                lex_advance(wrapper, false);
+                                lookahead = lex_lookahead(wrapper);
+                                while (lookahead != '\'') {
+                                    lex_advance(wrapper, false);
+                                    lookahead = lex_lookahead(wrapper);
+                                }
+                                lex_advance(wrapper, false);
+                            }
+                            default: {
+                                while (lookahead != ' ' && lookahead != '\t') {
+                                    lex_advance(wrapper, false);
+                                    lookahead = lex_lookahead(wrapper);
+                                }
+                            }
+                        }
+                        item.range.end = wrapper->curr_pos;
+                        item.length = wrapper->pos - buffer_item_pos;
+                        // before we add, make sure next character is whitespace
+                        if (!(lookahead == ' ' || lookahead == '\t' || lookahead == '}')) {
+                            return res;
+                        }
+                        lex_backtrack_n(wrapper, 1);
+                        size_t index = stack_insert(stack, item_clone);
+                        if (index < not_found) {
+                            stack_insert_(stack, item, index);
+                        }
+                        break;
+                    }
+                    default: {
+                        return res;
+                    }
+                }
+                break;
+            }
+            case '#': {
+                if (!encountered_default) {
+                    item.token = ID_ATTR;
+                } else {
+                    return res;
+                }
+                break;
+            }
+            case '.': {
+                if (!encountered_default) {
+                    item.token = CLASS_ATTR;
+                }
+                break;
+            }
             case '\\': {
                 // treat next character as literal - do not
                 // parse it
                 lex_advance(wrapper, false);
                 break;
             }
+            case '\t':
+            case ' ': {
+                // new item
+                item.range.end = wrapper->curr_pos;
+                item.length = wrapper->pos - buffer_item_pos;
+                if (item.token != NONE) {
+                    stack_insert(stack, item);
+                }
+                lex_advance(wrapper, false);
+                lookahead = lex_lookahead(wrapper);
+                while (lookahead == ' ') {
+                    lex_advance(wrapper, false);
+                    lookahead = lex_lookahead(wrapper);
+                }
+                buffer_item_pos = wrapper->pos;
+                item.range.start = wrapper->curr_pos;
+                item.token = NONE;
+                encountered_default = false;
+                continue;
+
+            }
             default: {
+                if (!encountered_default) {
+                    if (lookahead >= '0' && lookahead <= '9') {
+                        return res;
+                    }
+                    switch (item.token) {
+                        case NONE: {
+                            if (!isalpha(lookahead) || lookahead == '_') {
+                                // key values cannot start with '_'
+                                return res;
+                            }
+                            break;
+                        }
+                        case CLASS_ATTR: {
+                            if (!isalpha(lookahead) || lookahead == '-' || lookahead == '_') {
+                                return res;
+                            }
+                            break;
+                        }
+                        default: {}
+                    }
+                } else if (!(isalnum(lookahead) || lookahead == '-' || lookahead == '_')) {
+                    return res;
+                }
+                if (item.token == NONE) {
+                    item.token = KEY_ATTR;
+                }
+                encountered_default = true;
                 new_line_count = 0;
                 break;
             }
@@ -830,6 +1004,19 @@ static ParseResult parse_bracket(LexWrap *wrapper, ParseResultArray *stack, uint
                                     stack_dont_parse(stack, bracket_index);
                                 }
                             }
+                            lookahead = lex_lookahead(wrapper);
+                            if (lookahead == '{') {
+                                ParseResult attempt = parse_curly_attr(wrapper, stack);
+                                print_parse_result(&attempt);
+                                // if it was successful, finish up bracket Parse
+                                if (attempt.success && attempt.token == CURLY_ATTR) {
+                                    res.range.end = lex_current_position(wrapper);
+                                    res.length = wrapper->pos - buffer_start_pos;
+                                } else {
+                                    // we probably failed
+                                    return res;
+                                }
+                            }
                             stack_insert(stack, bracket);
                             goto return_res;
                         }
@@ -837,7 +1024,10 @@ static ParseResult parse_bracket(LexWrap *wrapper, ParseResultArray *stack, uint
                     }
                     case '{': {
                         // parse curly attributes
+                        print_stack(stack);
+                        fprintf(stderr, "attempting to parse curly attributes\n");
                         ParseResult attempt = parse_curly_attr(wrapper, stack);
+                        print_parse_result(&attempt);
                         // if it was successful, finish up bracket Parse
                         if (attempt.success && attempt.token == CURLY_ATTR) {
                             res.range.end = bracket_close_pos;
@@ -2370,6 +2560,16 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       }
   }
 
+  if (valid_symbols[EMPTY]) {
+      size_t index = stack_find(&state->results, &state->pos, EMPTY_TOKEN, false);
+      if (index < not_found) {
+          lexer->mark_end(lexer);
+          lexer->result_symbol = EMPTY;
+          array_erase(&state->results, index);
+          return true;
+      }
+  }
+
   // detect  star
   if (lexer->lookahead == '*' && (
       valid_symbols[EMPHASIS_STAR_START] ||
@@ -2677,6 +2877,16 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       }
   }
 
+  if (lexer->lookahead == '{' && valid_symbols[CURLY_START]) {
+      size_t index = stack_find(&state->results, &wrapper.curr_pos, CURLY_ATTR, false);
+      if (index < not_found) {
+          lexer->result_symbol = CURLY_START;
+          lex_advance(&wrapper, false);
+          lexer->mark_end(lexer);
+          return true;
+      }
+  }
+
   if (lexer->lookahead == ']' && valid_symbols[BRACKET_END]) {
       lex_advance(&wrapper, false);
       lexer->mark_end(lexer);
@@ -2704,6 +2914,78 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
           }
           return true;
       }
+  }
+
+  if (lexer->lookahead == '}' && valid_symbols[CURLY_END]) {
+      lex_advance(&wrapper, false);
+      lexer->mark_end(lexer);
+      size_t index = stack_find(&state->results, &wrapper.curr_pos, CURLY_ATTR, true);
+      if (index < not_found) {
+          lexer->result_symbol = CURLY_END;
+          array_erase(&state->results, index);
+          // confirm index-- is HYPERLINK
+          if (index > 0) {
+              index--;
+              if (state->results.contents[index].token == SPAN) {
+                  array_erase(&state->results, index);
+              }
+          }
+          return true;
+      }
+  }
+
+  if (valid_symbols[ATTR_ID] || valid_symbols[ATTR_CLASS] || valid_symbols[ATTR_KEY] || valid_symbols[ATTR_VALUE]) {
+      size_t index = stack_find_any(&state->results, &wrapper.curr_pos, false);
+      fprintf(stderr, "ATTR_ID: %i - ATTR_CLASS: %i - ATTR_KEY: %i - ATTR_VALUE: %i \n", valid_symbols[ATTR_ID], valid_symbols[ATTR_CLASS], valid_symbols[ATTR_KEY], valid_symbols[ATTR_VALUE]);
+      fprintf(stderr, "pulling index %zu - current position:", index);
+      debug_pos(&wrapper.curr_pos);
+      fprintf(stderr, "\n");
+      print_stack(&state->results);
+      fprintf(stderr, "---\n");
+      if (index < not_found) {
+          ParseResult *element = array_get(&state->results, index);
+          switch (element->token) {
+              case ID_ATTR: {
+                    if (valid_symbols[ATTR_ID]) {
+                        lexer->result_symbol = ATTR_ID;
+                        lex_set_position(&wrapper, wrapper.pos + element->length);
+                        lexer->mark_end(lexer);
+                        return true;
+                    }
+                    break;
+              }
+              case CLASS_ATTR: {
+                    if (valid_symbols[ATTR_CLASS]) {
+                        lexer->result_symbol = ATTR_CLASS;
+                        lex_set_position(&wrapper, wrapper.pos + element->length);
+                        lexer->mark_end(lexer);
+                        return true;
+                    }
+                    break;
+              }
+              case KEY_ATTR: {
+                    if (valid_symbols[ATTR_KEY]) {
+                        lexer->result_symbol = ATTR_KEY;
+                        lex_set_position(&wrapper, wrapper.pos + element->length);
+                        lexer->mark_end(lexer);
+                        return true;
+                    }
+                    break;
+              }
+              case VALUE_ATTR: {
+                    if (valid_symbols[ATTR_VALUE]) {
+                        lexer->result_symbol = ATTR_VALUE;
+                        lex_set_position(&wrapper, wrapper.pos + element->length);
+                        lexer->mark_end(lexer);
+                        return true;
+                    }
+                    break;
+              }
+              default: {}
+
+          }
+      }
+
   }
 
   return false; // No token recognized
