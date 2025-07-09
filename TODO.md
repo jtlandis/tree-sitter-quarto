@@ -10,15 +10,22 @@ In-line Scanners:
   * [x] ~~strikethrough~~
   * [x] [text span]{.underline}
   * [x] [web link](https://www.google.com)
-  * [ ] `verbatim`
-  * [ ] `` `literal looking` ``
+  * [x] `verbatim`
+  * [x] `` `literal looking` ``
   * [ ] citation links
+  * [ ] equations
+  * [ ] definitions
+  * [ ] yaml header
+  * [ ] footnotes
 
 Other scanner options:
  - [ ] code block syntax
+ - [ ] div style blocks "::: callout  :::"
  - [ ] indentations
  - [ ] list items
+ - [ ] check boxes
  - [ ] pipe/other tables???
+ - [ ] block eqauations
 
 When considering underscore and star syntax together, the parse_inline function
 may need to consider symbols prior. (more maybe just backtrack?)
