@@ -557,6 +557,7 @@ static void stack_dont_parse(ParseResultArray* array, size_t index) {
     assert(index < array->size);
     ParseResult *element = &array->contents[index];
     switch (element->token) {
+        case CLASS_ATTR:
         case LINK:
         case BRACKET: {
             ParseResult start = new_parse_result_from(element);
@@ -564,6 +565,12 @@ static void stack_dont_parse(ParseResultArray* array, size_t index) {
             start.range.end.col++;
             start.length = 1;
             start.token = DO_NOT_PARSE;
+            Range element_range = element->range;
+            // fprintf(stderr, "\n looking for empty token between ");
+            // debug_pos(&element_range.start);
+            // fprintf(stderr, " - ");
+            // debug_pos(&element_range.end);
+            // fprintf(stderr, "\n");
             ParseResult end = new_parse_result_from(&start);
             end.range.end = element->range.end;
             end.range.start = end.range.end;
@@ -571,6 +578,11 @@ static void stack_dont_parse(ParseResultArray* array, size_t index) {
             array_erase(array, index);
             size_t i = stack_insert(array, start);
             stack_insert_(array, end, i);
+            size_t has_empty = stack_find_token_within_range(array, EMPTY_TOKEN, &element_range);
+            // fprintf(stderr, "found EMPTY_TOKEN at %zu\n", has_empty);
+            if (has_empty < not_found) {
+                array_erase(array, has_empty);
+            }
             break;
         }
         default: {
@@ -1009,6 +1021,10 @@ static ParseResult parse_bracket(LexWrap *wrapper, ParseResultArray *stack, uint
                                     stack_dont_parse(stack, link_index);
                                 }
                                 size_t bracket_index = stack_find_token_within_range(stack, BRACKET, &element_range);
+                                if (bracket_index < not_found) {
+                                    stack_dont_parse(stack, bracket_index);
+                                }
+                                size_t attr_index = stack_find_token_within_range(stack, CURLY_ATTR, &element_range);
                                 if (bracket_index < not_found) {
                                     stack_dont_parse(stack, bracket_index);
                                 }
@@ -2571,6 +2587,10 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
 
   if (valid_symbols[EMPTY]) {
       size_t index = stack_find(&state->results, &state->pos, EMPTY_TOKEN, false);
+      // debug_pos(&wrapper.curr_pos);
+      // fprintf(stderr, "\n");
+      // print_stack(&state->results);
+      // fprintf(stderr, "---\n");
       if (index < not_found) {
           lexer->mark_end(lexer);
           lexer->result_symbol = EMPTY;
