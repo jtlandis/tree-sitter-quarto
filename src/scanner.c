@@ -288,12 +288,21 @@ static Range new_range(Pos start, Pos end) {
     return obj;
 }
 
-static ParseResult new_parse_result() {
+static ParseResult empty_parse_result() {
     ParseResult obj;
     obj.success = false;
     obj.length = 0;
     obj.range = new_range(new_position(0, 0), new_position(0, 0));
     obj.token = NONE;
+    return obj;
+}
+
+static ParseResult new_parse_result(Pos start, Pos end, enum ParseToken token, uint32_t length, bool success) {
+    ParseResult obj;
+    obj.success = success;
+    obj.length = length;
+    obj.range = new_range(start, end);
+    obj.token = token;
     return obj;
 }
 
@@ -599,7 +608,7 @@ static ParseResult parse_inline(LexWrap *wrapper, ParseResultArray* stack, int32
     // fprintf(stderr, "calling parse_inline()\n");
     // uint32_t stack_start_size = stack->size;
     uint32_t buffer_start_pos = wrapper->pos;
-    ParseResult res = new_parse_result();
+    ParseResult res = empty_parse_result();
     res.range.start = wrapper->curr_pos;
     int32_t lookahead = lex_lookahead(wrapper);
     switch (lookahead) {
@@ -643,7 +652,7 @@ static ParseResult parse_inline(LexWrap *wrapper, ParseResultArray* stack, int32
 
 static void dont_parse_next_n(LexWrap *wrapper, ParseResultArray *stack, uint32_t n) {
     if (n > 0) {
-        ParseResult result = new_parse_result();
+        ParseResult result = empty_parse_result();
         result.range.start = wrapper->curr_pos;
         for (uint32_t i = 0; i < n; i++) {
             lex_advance(wrapper, false);
@@ -659,7 +668,7 @@ static void dont_parse_next_n(LexWrap *wrapper, ParseResultArray *stack, uint32_
 
 static ParseResult parse_parenthesis(LexWrap *wrapper, ParseResultArray *stack) {
     uint32_t buffer_start_pos = wrapper->pos;
-    ParseResult res = new_parse_result();
+    ParseResult res = empty_parse_result();
     res.range.start = wrapper->curr_pos;
     if (lex_lookahead(wrapper) != '(') {
         return res;
@@ -725,7 +734,7 @@ static ParseResult parse_parenthesis(LexWrap *wrapper, ParseResultArray *stack) 
             // fprintf(stderr, "failed parsing: ");
             // print_parse_result(&res);
             // we do not know if result ranges are correct...
-            ParseResult start = new_parse_result();
+            ParseResult start = empty_parse_result();
             start.token = DO_NOT_PARSE;
             start.range.start = res.range.start;
             start.range.end = res.range.start;
@@ -743,7 +752,7 @@ static ParseResult parse_parenthesis(LexWrap *wrapper, ParseResultArray *stack) 
 
 static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
     uint32_t buffer_start_pos = wrapper->pos;
-    ParseResult res = new_parse_result();
+    ParseResult res = empty_parse_result();
     res.range.start = wrapper->curr_pos;
     if (lex_lookahead(wrapper) != '{') {
         return res;
@@ -930,7 +939,7 @@ static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
             // fprintf(stderr, "failed parsing: ");
             // print_parse_result(&res);
             // we do not know if result ranges are correct...
-            ParseResult start = new_parse_result();
+            ParseResult start = empty_parse_result();
             start.token = DO_NOT_PARSE;
             start.range.start = res.range.start;
             start.range.end = res.range.start;
@@ -950,7 +959,7 @@ static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
 static ParseResult parse_bracket(LexWrap *wrapper, ParseResultArray *stack, uint8_t *bracket_count) {
 
     uint32_t buffer_start_pos = wrapper->pos;
-    ParseResult res = new_parse_result();
+    ParseResult res = empty_parse_result();
     res.range.start = wrapper->curr_pos;
     if (lex_lookahead(wrapper) != '[') {
         return res;
@@ -1047,7 +1056,7 @@ static ParseResult parse_bracket(LexWrap *wrapper, ParseResultArray *stack, uint
                     }
                 }
                 // we reach here we have failed to parse beyond the brackets
-                ParseResult close = new_parse_result();
+                ParseResult close = empty_parse_result();
                 close.range.end = bracket_close_pos;
                 close.range.start = bracket_close_pos;
                 close.range.start.col--;
@@ -1111,7 +1120,7 @@ static ParseResult parse_bracket(LexWrap *wrapper, ParseResultArray *stack, uint
             // fprintf(stderr, "failed parsing: ");
             // print_parse_result(&res);
             // we do not know if result ranges are correct...
-            ParseResult start = new_parse_result();
+            ParseResult start = empty_parse_result();
             start.token = DO_NOT_PARSE;
             start.range.start = res.range.start;
             start.range.end = res.range.start;
@@ -1133,7 +1142,7 @@ static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack, uint8_t
     // fprintf(stderr, "calling - parse_star()\n");
     // uint32_t stack_start_size = stack->size;
     uint32_t buffer_start_pos = wrapper->pos;
-    ParseResult res = new_parse_result();
+    ParseResult res = empty_parse_result();
     res.range.start = wrapper->curr_pos;
 
     /// for this parse to be valid one of
@@ -1258,7 +1267,7 @@ static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack, uint8_t
                                 // inner syntax is an emph and outer is
                                 // likely a strong.
                                 // create new result to insert
-                                ParseResult inner = new_parse_result();
+                                ParseResult inner = empty_parse_result();
                                 inner.range.end = wrapper->curr_pos;
                                 inner.range.start = res.range.start;
                                 inner.range.start.col += 2;
@@ -1276,7 +1285,7 @@ static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack, uint8_t
                                 // inner syntax is an strong and outer is
                                 // likely a emph.
                                 // create new result to insert
-                                ParseResult inner = new_parse_result();
+                                ParseResult inner = empty_parse_result();
                                 inner.range.end = wrapper->curr_pos;
                                 inner.range.start = res.range.start;
                                 inner.range.start.col += 1;
@@ -1300,7 +1309,7 @@ static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack, uint8_t
                                 res.token = STRONG_STAR;
                                 res.length = wrapper->pos - buffer_start_pos;
                                 // inner will be an emphasis
-                                ParseResult inner = new_parse_result();
+                                ParseResult inner = empty_parse_result();
                                 inner.range.end = wrapper->curr_pos;
                                 inner.range.end.col -= 2;
                                 inner.range.start = res.range.start;
@@ -1373,7 +1382,7 @@ static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack, uint8_t
             // fprintf(stderr, "failed parsing: ");
             // print_parse_result(&res);
             // we do not know if result ranges are correct...
-            ParseResult start = new_parse_result();
+            ParseResult start = empty_parse_result();
             start.token = DO_NOT_PARSE;
             start.range.start = res.range.start;
             start.range.end = res.range.start;
@@ -1408,7 +1417,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
     // uint32_t stack_start_size = stack->size;
     uint32_t buffer_start_pos = wrapper->pos;
     uint32_t last_lex_pos = wrapper->pos;
-    ParseResult res = new_parse_result();
+    ParseResult res = empty_parse_result();
     res.range.start = wrapper->curr_pos;
 
 
@@ -1678,7 +1687,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
                                 // then we know that the inner set is an
                                 // emphasis.
                                 if (!isalpha(next_char)) {
-                                    ParseResult inner = new_parse_result();
+                                    ParseResult inner = empty_parse_result();
                                     inner.range.end = wrapper->curr_pos;
                                     inner.range.start = res.range.start;
                                     inner.range.start.col += 2;
@@ -1716,7 +1725,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
                                 // likely a emph.
                                 // create new result to insert
                                 if (!isalpha(next_char)) {
-                                    ParseResult inner = new_parse_result();
+                                    ParseResult inner = empty_parse_result();
                                     inner.range.end = wrapper->curr_pos;
                                     inner.range.start = res.range.start;
                                     inner.range.start.col += 1;
@@ -1733,7 +1742,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
                                     // the inner becomes an emphasis and the second
                                     // _ is a literal.
                                     lex_backtrack_n(wrapper, 1);
-                                    ParseResult inner = new_parse_result();
+                                    ParseResult inner = empty_parse_result();
                                     inner.range.end = wrapper->curr_pos;
                                     inner.range.start = res.range.start;
                                     inner.range.start.col += 2;
@@ -1758,7 +1767,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
                                     res.success = true;
                                     res.range.end = wrapper->curr_pos;
                                     res.length = wrapper->pos - buffer_start_pos;
-                                    ParseResult inner = new_parse_result();
+                                    ParseResult inner = empty_parse_result();
                                     inner.range.end = wrapper->curr_pos;
                                     inner.range.end.col -= 2;
                                     inner.range.start = res.range.start;
@@ -1771,7 +1780,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
                                         res.success = false;
                                     }
                                 } else {
-                                    ParseResult inner = new_parse_result();
+                                    ParseResult inner = empty_parse_result();
                                     lex_backtrack_n(wrapper, 1);
                                     inner.range.end = wrapper->curr_pos;
                                     inner.range.start = res.range.start;
@@ -1802,7 +1811,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
                                 res.success = true;
                                 res.range.end = wrapper->curr_pos;
                                 res.length = last_lex_pos - buffer_start_pos;
-                                ParseResult inner = new_parse_result();
+                                ParseResult inner = empty_parse_result();
                                 inner.range.end = wrapper->curr_pos;
                                 inner.range.end.col -= 2;
                                 inner.range.start = res.range.start;
@@ -1882,7 +1891,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
             // fprintf(stderr, "failed parsing: ");
             // print_parse_result(&res);
             // we do not know if result ranges are correct...
-            ParseResult start = new_parse_result();
+            ParseResult start = empty_parse_result();
             start.token = DO_NOT_PARSE;
             start.range.start = res.range.start;
             start.range.end = res.range.start;
@@ -1931,7 +1940,7 @@ static void remove_tokens_ge_pos(ParseResultArray* stack, enum ParseToken token,
 
 static ParseResult parse_superscript(LexWrap *wrapper, ParseResultArray* stack, uint8_t *bracket_count) {
     uint32_t buffer_start_pos = wrapper->pos;
-    ParseResult res = new_parse_result();
+    ParseResult res = empty_parse_result();
     res.range.start = wrapper->curr_pos;
 
     int32_t lookahead = lex_lookahead(wrapper);
@@ -1981,7 +1990,7 @@ static ParseResult parse_superscript(LexWrap *wrapper, ParseResultArray* stack, 
             case ']': {
                 if (*bracket_count > 0) {
                     // this func's has a special end
-                    ParseResult start = new_parse_result();
+                    ParseResult start = empty_parse_result();
                     start.range.start = res.range.start;
                     start.range.end = res.range.start;
                     start.range.end.col++;
@@ -2015,7 +2024,7 @@ static ParseResult parse_superscript(LexWrap *wrapper, ParseResultArray* stack, 
         if (res.success) {
             stack_insert(stack, res);
         } else {
-            ParseResult start = new_parse_result();
+            ParseResult start = empty_parse_result();
             start.range.start = res.range.start;
             lex_set_position(wrapper, buffer_start_pos + 1);
             start.range.end = wrapper->curr_pos;
@@ -2041,7 +2050,7 @@ static ParseResult parse_superscript(LexWrap *wrapper, ParseResultArray* stack, 
 ///
 static ParseResult parse_tilde(LexWrap *wrapper, ParseResultArray* stack, uint8_t *bracket_count) {
     uint32_t buffer_start_pos = wrapper->pos;
-    ParseResult res = new_parse_result();
+    ParseResult res = empty_parse_result();
     res.range.start = wrapper->curr_pos;
 
     int32_t lookahead = lex_lookahead(wrapper);
@@ -2118,7 +2127,7 @@ static ParseResult parse_tilde(LexWrap *wrapper, ParseResultArray* stack, uint8_
                                 }
                                 res.success = true;
                                 res.token = SUBSCRIPT;
-                                ParseResult start = new_parse_result();
+                                ParseResult start = empty_parse_result();
                                 start.range.start = res.range.start;
                                 start.success = true;
                                 start.token = DO_NOT_PARSE;
@@ -2178,7 +2187,7 @@ static ParseResult parse_tilde(LexWrap *wrapper, ParseResultArray* stack, uint8_
             case ']': {
                 if (*bracket_count > 0) {
                     // this func's has a special end
-                    ParseResult start = new_parse_result();
+                    ParseResult start = empty_parse_result();
                     start.range.start = res.range.start;
                     start.range.end = res.range.start;
                     start.range.end.col++;
@@ -2219,7 +2228,7 @@ static ParseResult parse_tilde(LexWrap *wrapper, ParseResultArray* stack, uint8_
         if (res.success) {
             stack_insert(stack, res);
         } else {
-            ParseResult start = new_parse_result();
+            ParseResult start = empty_parse_result();
             start.range.start = res.range.start;
             lex_set_position(wrapper, buffer_start_pos + 1);
             start.range.end = wrapper->curr_pos;
