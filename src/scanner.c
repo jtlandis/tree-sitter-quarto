@@ -1,3 +1,4 @@
+#include <setjmp.h>
 #include <stdatomic.h>
 #include <stdint.h>
 #include "tree_sitter/parser.h"
@@ -39,6 +40,7 @@ enum TokenType {
   ATTR_CLASS,
   ATTR_KEY,
   ATTR_VALUE,
+  INLINE_VERBATIM,
   NO_PARSE,
   ERROR, //General Emphasis
 };
@@ -63,7 +65,7 @@ enum ParseToken {
     CLASS_ATTR,
     KEY_ATTR,
     VALUE_ATTR,
-
+    BACKQUOTE
 };
 
 
@@ -318,6 +320,9 @@ static ParseResult new_parse_result_from(ParseResult *other) {
 typedef Array(ParseResult) ParseResultArray;
 // typedef Array(uint32_t) IndexArray;
 
+typedef Array(uint8_t) u8Array;
+
+typedef Array(uint32_t) u32Array;
 
 /// checks if x is within (inclusive) the range y
 static bool pos_within_range(Pos *x, Range *y) {
@@ -615,6 +620,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
 static ParseResult parse_superscript(LexWrap *wrapper, ParseResultArray* stack, uint8_t *bracket_count);
 static ParseResult parse_tilde(LexWrap *wrapper, ParseResultArray* stack, uint8_t *bracket_count);
 static ParseResult parse_bracket(LexWrap *wrapper, ParseResultArray *stack, uint8_t *bracket_count);
+static ParseResult parse_backtick(LexWrap *wrapper, ParseResultArray *stack);
 
 static ParseResult parse_inline(LexWrap *wrapper, ParseResultArray* stack, int32_t prior_char, uint8_t *bracket_count) {
     // fprintf(stderr, "calling parse_inline()\n");
@@ -647,6 +653,10 @@ static ParseResult parse_inline(LexWrap *wrapper, ParseResultArray* stack, int32
         case '[': {
             res = parse_bracket(wrapper, stack, bracket_count);
             break;
+        }
+
+        case '`': {
+            res = parse_backtick(wrapper, stack);
         }
 
     }
@@ -778,17 +788,21 @@ static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
     item.token = EMPTY_TOKEN;
     uint32_t buffer_item_pos = wrapper->pos;
     bool encountered_default = false;
-    fprintf(stderr, "about to start parsing - first item is '%c'\n", lookahead);
+    // fprintf(stderr, "about to start parsing - first item is '%c'\n", lookahead);
     // simply walk through the parenthesis
     while(lookahead != '\0') {
-        fprintf(stderr, "iter - '%c'\n", lookahead);
+        // fprintf(stderr, "iter - '%c'\n", lookahead);
         switch (lookahead) {
             case '}': {
-                item.range.end = wrapper->curr_pos;
-                item.length = wrapper->pos - buffer_item_pos;
+
+                if (item.token == NONE || item.token == KEY_ATTR) {
+                    lex_advance(wrapper, false);
+                    goto return_res;
+                }
                 if (item.token != NONE) {
+                    item.range.end = wrapper->curr_pos;
+                    item.length = wrapper->pos - buffer_item_pos;
                     stack_insert(stack, item);
-                    print_stack(stack);
                 }
                 lex_advance(wrapper, false);
                 res.range.end = wrapper->curr_pos;
@@ -929,7 +943,7 @@ static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
                 } else if (!(isalnum(lookahead) || lookahead == '-' || lookahead == '_')) {
                     return res;
                 }
-                if (item.token == NONE) {
+                if (item.token == NONE || item.token == EMPTY_TOKEN) {
                     item.token = KEY_ATTR;
                 }
                 encountered_default = true;
@@ -1032,7 +1046,7 @@ static ParseResult parse_bracket(LexWrap *wrapper, ParseResultArray *stack, uint
                             lookahead = lex_lookahead(wrapper);
                             if (lookahead == '{') {
                                 ParseResult attempt = parse_curly_attr(wrapper, stack);
-                                print_parse_result(&attempt);
+                                // print_parse_result(&attempt);
                                 // if it was successful, finish up bracket Parse
                                 if (attempt.success && attempt.token == CURLY_ATTR) {
                                     res.range.end = lex_current_position(wrapper);
@@ -1049,10 +1063,8 @@ static ParseResult parse_bracket(LexWrap *wrapper, ParseResultArray *stack, uint
                     }
                     case '{': {
                         // parse curly attributes
-                        print_stack(stack);
-                        fprintf(stderr, "attempting to parse curly attributes\n");
                         ParseResult attempt = parse_curly_attr(wrapper, stack);
-                        print_parse_result(&attempt);
+                        // print_parse_result(&attempt);
                         // if it was successful, finish up bracket Parse
                         if (attempt.success && attempt.token == CURLY_ATTR) {
                             res.range.end = bracket_close_pos;
@@ -1153,6 +1165,122 @@ static ParseResult parse_bracket(LexWrap *wrapper, ParseResultArray *stack, uint
     }
 
 }
+
+/// This syntax is special in that we will typically not worry about inner
+// expressions because the intention is that inner expressions are verbatim.
+//
+// This function can fail if it does not detect any additional stream of backticks
+// before a stream of 2 \n characters. lexer should be at the end of the
+// last stream of valid backticks. i.e. in the case of failure, lexer will be
+// at the end of the first stream of backticks.
+static ParseResult parse_backtick(LexWrap *wrapper, ParseResultArray *stack) {
+    uint32_t buffer_start_pos = wrapper->pos;
+    ParseResult res = new_parse_result(wrapper->curr_pos, wrapper->curr_pos, NONE, 0, false);
+    int32_t lookahead = lex_lookahead(wrapper);
+    if (lookahead != '`') {
+        return res;
+    }
+    uint8_t count = 0;
+    while (lookahead == '`') {
+        lex_advance(wrapper, false);
+        lookahead = lex_lookahead(wrapper);
+        count++;
+    }
+    uint8_t new_line_count = 0;
+    u8Array counts;
+    u32Array positions;
+    array_init(&counts);
+    array_push(&counts, count);
+    array_init(&positions);
+    array_push(&positions, buffer_start_pos);
+    uint8_t count_match = count;
+    size_t which_match = 0;
+    uint8_t partial_match = 0;
+    // now skip over most tokens
+    while(lookahead != '\0') {
+        switch (lookahead) {
+            case '`': {
+                buffer_start_pos = wrapper->pos;
+                count = 0;
+                while (lookahead == '`') {
+                    lex_advance(wrapper, false);
+                    lookahead = lex_lookahead(wrapper);
+                    count++;
+                }
+                // check that we have matched our first stack...
+                if (count <= count_match) {
+                    // the first time we partial match,
+                    // we will not track further indexes
+                    if (partial_match < count) {
+                        res.range.end = lex_current_position(wrapper);
+                        res.success = true;
+                        res.token = BACKQUOTE;
+                        // print_parse_result(&res);
+                        partial_match = count;
+                        which_match = counts.size;
+                        array_push(&counts, count);
+                        array_push(&positions, buffer_start_pos);
+                        // if we match exactly, we are done, dont parse further
+                        if (count == count_match) {
+                            goto return_res;
+                        }
+                    }
+                }
+                //otherwise just walk over these tokens.
+
+            }
+            case '\n': {
+                new_line_count++;
+                if (new_line_count > 1) {
+                    // fprintf(stderr, "found too many '\\n' characters. returning...\n");
+                    goto return_res;
+                }
+                break;
+            }
+            default: {
+                new_line_count = 0;
+                break;
+            }
+        }
+        lex_advance(wrapper, false);
+        lookahead = lex_lookahead(wrapper);
+    }
+
+    return_res: {
+        uint32_t backtick_end = *array_get(&positions, which_match);
+        uint32_t lexer_start_pos = *array_get(&positions, 0);
+        count = *array_get(&counts, which_match);
+        uint8_t shift = count_match - count;
+        // move start position based on match
+        if (shift > 0) {
+            ParseResult no_parse = new_parse_result(res.range.start, res.range.start, DO_NOT_PARSE, shift, true);
+            no_parse.range.end.col += shift;
+            stack_insert(stack,no_parse);
+        }
+        res.range.start.col += shift;
+        lexer_start_pos += shift;
+        backtick_end = backtick_end + count;
+        res.length = backtick_end - lexer_start_pos;
+        if (res.success) {
+
+            lex_set_position(wrapper, backtick_end);
+            stack_insert(stack, res);
+            // now if next position is attr, parse
+            if (lex_lookahead(wrapper) == '{') {
+                // even if it fails, we dont care.
+                parse_curly_attr(wrapper, stack);
+            }
+        } else {
+            lexer_start_pos = *array_get(&positions, 0);
+            lex_set_position(wrapper, lexer_start_pos);
+            dont_parse_next_n(wrapper, stack, count_match);
+        }
+        array_delete(&counts);
+        array_delete(&positions);
+        return res;
+    }
+}
+
 
 static ParseResult parse_star(LexWrap *wrapper, ParseResultArray* stack, uint8_t *bracket_count) {
     // fprintf(stderr, "calling - parse_star()\n");
@@ -2514,7 +2642,7 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
   ScannerState *state = (ScannerState *)payload;
   // print_scanner_state(state);
   // fprintf(stderr, "scanner invoked before: %c - is alpha: %i\n",
-  //     lexer->lookahead, isalnum((int)lexer->lookahead));
+      // lexer->lookahead, isalnum((int)lexer->lookahead));
   // print_valid_symbols(valid_symbols);
   if (valid_symbols[ERROR]) {
       // fprintf(stderr, "ERROR is a valid symbol. do not handle\n");
@@ -2585,12 +2713,25 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       }
   }
 
-  if (valid_symbols[EMPTY]) {
-      size_t index = stack_find(&state->results, &state->pos, EMPTY_TOKEN, false);
+  if (lexer->lookahead == '`' && valid_symbols[INLINE_VERBATIM]) {
+      size_t index = stack_find(&state->results, &wrapper.curr_pos, BACKQUOTE, false);
+      // fprintf(stderr, "attempting to find BACKQUOTE %zu\nlexer position at ", index);
       // debug_pos(&wrapper.curr_pos);
       // fprintf(stderr, "\n");
       // print_stack(&state->results);
       // fprintf(stderr, "---\n");
+      if (index < not_found) {
+          ParseResult *element = array_get(&state->results, index);
+          lex_set_position(&wrapper, wrapper.pos + element->length);
+          lexer->result_symbol = INLINE_VERBATIM;
+          lexer->mark_end(lexer);
+          array_erase(&state->results, index);
+          return true;
+      }
+  }
+
+  if (valid_symbols[EMPTY]) {
+      size_t index = stack_find(&state->results, &state->pos, EMPTY_TOKEN, false);
       if (index < not_found) {
           lexer->mark_end(lexer);
           lexer->result_symbol = EMPTY;
@@ -2907,6 +3048,9 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
   }
 
   if (lexer->lookahead == '{' && valid_symbols[CURLY_START]) {
+      // fprintf(stderr, "looking for curly_start - ");
+      // debug_pos(&wrapper.curr_pos);
+      // fprintf(stderr, "\n");
       size_t index = stack_find(&state->results, &wrapper.curr_pos, CURLY_ATTR, false);
       if (index < not_found) {
           lexer->result_symbol = CURLY_START;
@@ -2965,12 +3109,12 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
 
   if (valid_symbols[ATTR_ID] || valid_symbols[ATTR_CLASS] || valid_symbols[ATTR_KEY] || valid_symbols[ATTR_VALUE]) {
       size_t index = stack_find_any(&state->results, &wrapper.curr_pos, false);
-      fprintf(stderr, "ATTR_ID: %i - ATTR_CLASS: %i - ATTR_KEY: %i - ATTR_VALUE: %i \n", valid_symbols[ATTR_ID], valid_symbols[ATTR_CLASS], valid_symbols[ATTR_KEY], valid_symbols[ATTR_VALUE]);
-      fprintf(stderr, "pulling index %zu - current position:", index);
-      debug_pos(&wrapper.curr_pos);
-      fprintf(stderr, "\n");
-      print_stack(&state->results);
-      fprintf(stderr, "---\n");
+      // fprintf(stderr, "ATTR_ID: %i - ATTR_CLASS: %i - ATTR_KEY: %i - ATTR_VALUE: %i \n", valid_symbols[ATTR_ID], valid_symbols[ATTR_CLASS], valid_symbols[ATTR_KEY], valid_symbols[ATTR_VALUE]);
+      // fprintf(stderr, "pulling index %zu - current position:", index);
+      // debug_pos(&wrapper.curr_pos);
+      // fprintf(stderr, "\n");
+      // print_stack(&state->results);
+      // fprintf(stderr, "---\n");
       if (index < not_found) {
           ParseResult *element = array_get(&state->results, index);
           switch (element->token) {

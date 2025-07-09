@@ -17,6 +17,7 @@ module.exports = grammar({
   ],
 
   externals: ($) => [
+    $.empty,
     $._line_start,
     $.line_end,
     $._emph_star_start,
@@ -39,6 +40,11 @@ module.exports = grammar({
     $.link_end,
     $.curly_start,
     $.curly_end,
+    $.attr_id,
+    $.attr_class,
+    $.attr_key,
+    $.attr_value,
+    $.verbatim,
     $._no_parse,
     $._unused_error,
   ],
@@ -80,6 +86,8 @@ module.exports = grammar({
           $.subscript,
           $.striketrhough,
           $.hyperlink,
+          $.span,
+          seq($.verbatim, optional(seq($.curly_start, $.attrs, $.curly_end))),
           alias($._no_parse, $.literal),
         ),
       ), //, $.whitespace)), //prec(1, repeat1(choice($.word, $.whitespace))),
@@ -108,7 +116,7 @@ module.exports = grammar({
     quotation: ($) => choice($.single_quote, $.double_quote),
     single_quote: ($) => "'",
     double_quote: ($) => '"',
-    symbols: ($) => /[@#\$%\^\&\*\(\)_\+\=\-/><~\\]/,
+    symbols: ($) => /[@#\$%\^\&\*\(\)_\+\=\-/><~\\\{\}]/,
     literal: ($) => prec(10, /\\[@#\$%\^\&\*\(\)_\+\=\-/><~\\ ]/),
     content: ($) => prec.left(3, seq(repeat1($.paragraph), repeat($.line_end))),
     _section: ($) => prec.right(choice($.heading, $.content)),
@@ -198,8 +206,24 @@ module.exports = grammar({
         $.link_start,
         $.link,
         $.link_end,
+        optional(seq($.curly_start, $.attrs, $.curly_end)),
       ),
-    link: ($) => /[^)]+/,
+    link: ($) => choice($.empty, /[^)]+/),
+    span: ($) =>
+      seq(
+        $.bracket_start,
+        repeat(prec.left(seq($._line_content, repeat($.line_end)))),
+        $.bracket_end,
+        $.curly_start,
+        $.attrs,
+        $.curly_end,
+      ),
+    attrs: ($) =>
+      repeat1(choice($.empty, $.attr_id, $.attr_class, $.attr_keyvalue)),
+    // attr_id: ($) => seq("#", $.attr_id),
+    // attr_class_: ($) => seq($.period, $.attr_class),
+    attr_keyvalue: ($) =>
+      seq(field("key", $.attr_key), "=", field("value", $.attr_value)),
     // hyperlink: ($) => seq("[", $._line_content, "]", "(", /[^)]+/, ")"),
   },
 
