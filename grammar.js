@@ -45,6 +45,7 @@ module.exports = grammar({
     $.attr_key,
     $.attr_value,
     $.verbatim,
+    $.math,
     $._no_parse,
     $._unused_error,
   ],
@@ -55,7 +56,8 @@ module.exports = grammar({
     comment: ($) => token(seq("<!--", /.*/, "-->")),
 
     _yaml: ($) => choice(),
-    paragraph: ($) => prec.right(3, seq(repeat1($._line), $.paragraph_end)),
+    paragraph: ($) =>
+      prec.right(3, seq(repeat1($._line), optional($.paragraph_end))),
     line_break: ($) =>
       prec.right(
         2,
@@ -87,6 +89,8 @@ module.exports = grammar({
           $.striketrhough,
           $.hyperlink,
           $.span,
+          $.inline_math,
+          $.display_math,
           seq($.verbatim, optional(seq($.curly_start, $.attrs, $.curly_end))),
           alias($._no_parse, $.literal),
         ),
@@ -96,6 +100,8 @@ module.exports = grammar({
         2,
         seq($._line_start, $._line_content, choice($.line_break, $.line_end)),
       ), //prec.right(seq($._line, optional($.line_end))),
+    inline_math: ($) => seq("$", $.math, "$"),
+    display_math: ($) => seq("$$", $.math, "$$"),
     word: ($) => /[\p{L}\p{N}]+/,
     puncuation: ($) =>
       choice(
@@ -118,8 +124,8 @@ module.exports = grammar({
     double_quote: ($) => '"',
     symbols: ($) => /[@#\$%\^\&\*\(\)_\+\=\-/><~\\\{\}]/,
     literal: ($) => prec(10, /\\[@#\$%\^\&\*\(\)_\+\=\-/><~\\ ]/),
-    content: ($) => prec.left(3, seq(repeat1($.paragraph), repeat($.line_end))),
-    _section: ($) => prec.right(choice($.heading, $.content)),
+    content: ($) => repeat1($.paragraph), //seq(, repeat($.line_end))),
+    _section: ($) => choice($.heading, $.content),
     heading: ($) =>
       prec(
         5,
@@ -230,6 +236,7 @@ module.exports = grammar({
   conflicts: ($) => [
     [$._emph_content],
     [$._strong_content],
+    [$.content],
     // [$.paragraph],
     // [$.paragraph, $.line],
     // [$.paragraph, $.word],
