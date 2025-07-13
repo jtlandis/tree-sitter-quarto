@@ -59,8 +59,16 @@
             }
           },
           {
-            "type": "SYMBOL",
-            "name": "paragraph_end"
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "paragraph_end"
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
           }
         ]
       }
@@ -167,6 +175,14 @@
             "name": "span"
           },
           {
+            "type": "SYMBOL",
+            "name": "inline_math"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "display_math"
+          },
+          {
             "type": "SEQ",
             "members": [
               {
@@ -241,6 +257,40 @@
           }
         ]
       }
+    },
+    "inline_math": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "$"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "math"
+        },
+        {
+          "type": "STRING",
+          "value": "$"
+        }
+      ]
+    },
+    "display_math": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "$$"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "math"
+        },
+        {
+          "type": "STRING",
+          "value": "$$"
+        }
+      ]
     },
     "word": {
       "type": "PATTERN",
@@ -337,44 +387,24 @@
       }
     },
     "content": {
-      "type": "PREC_LEFT",
-      "value": 3,
+      "type": "REPEAT1",
       "content": {
-        "type": "SEQ",
-        "members": [
-          {
-            "type": "REPEAT1",
-            "content": {
-              "type": "SYMBOL",
-              "name": "paragraph"
-            }
-          },
-          {
-            "type": "REPEAT",
-            "content": {
-              "type": "SYMBOL",
-              "name": "line_end"
-            }
-          }
-        ]
+        "type": "SYMBOL",
+        "name": "paragraph"
       }
     },
     "_section": {
-      "type": "PREC_RIGHT",
-      "value": 0,
-      "content": {
-        "type": "CHOICE",
-        "members": [
-          {
-            "type": "SYMBOL",
-            "name": "heading"
-          },
-          {
-            "type": "SYMBOL",
-            "name": "content"
-          }
-        ]
-      }
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "heading"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "content"
+        }
+      ]
     },
     "heading": {
       "type": "PREC",
@@ -1085,6 +1115,9 @@
     ],
     [
       "_strong_content"
+    ],
+    [
+      "content"
     ]
   ],
   "precedences": [],
@@ -1200,6 +1233,10 @@
     {
       "type": "SYMBOL",
       "name": "verbatim"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "math"
     },
     {
       "type": "SYMBOL",

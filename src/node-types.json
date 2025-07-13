@@ -61,11 +61,22 @@
       "required": true,
       "types": [
         {
-          "type": "line_end",
-          "named": true
-        },
-        {
           "type": "paragraph",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "display_math",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "math",
           "named": true
         }
       ]
@@ -92,6 +103,10 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
@@ -105,6 +120,10 @@
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -206,11 +225,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -281,11 +308,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -356,11 +391,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -431,11 +474,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -506,11 +557,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -581,11 +640,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -664,11 +731,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -731,6 +806,21 @@
     }
   },
   {
+    "type": "inline_math",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "math",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "line_break",
     "named": true,
     "fields": {},
@@ -786,11 +876,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -974,11 +1072,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -1049,11 +1155,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -1128,11 +1242,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -1207,11 +1329,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -1286,11 +1416,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -1370,6 +1508,14 @@
   },
   {
     "type": "######",
+    "named": false
+  },
+  {
+    "type": "$",
+    "named": false
+  },
+  {
+    "type": "$$",
     "named": false
   },
   {
@@ -1455,6 +1601,10 @@
   },
   {
     "type": "link_start",
+    "named": true
+  },
+  {
+    "type": "math",
     "named": true
   },
   {

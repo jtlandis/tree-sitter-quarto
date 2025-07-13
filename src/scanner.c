@@ -2761,14 +2761,14 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
 
   ScannerState *state = (ScannerState *)payload;
   // print_scanner_state(state);
-  debug_pos(&state->pos);
-  fprintf(stderr, "  scanner invoked before: '%c' - is alpha: %i\n",
-      lexer->lookahead == '\n' ? 'n' : lexer->lookahead, isalnum((int)lexer->lookahead));
-  print_stack(&state->results);
-  printf(stderr, "---\n");
+  // debug_pos(&state->pos);
+  // fprintf(stderr, "  scanner invoked before: '%c' - is alpha: %i\n",
+  //     lexer->lookahead == '\n' ? 'n' : lexer->lookahead, isalnum((int)lexer->lookahead));
+  // print_stack(&state->results);
+  // printf(stderr, "---\n");
   // print_valid_symbols(valid_symbols);
   if (valid_symbols[ERROR]) {
-      fprintf(stderr, "ERROR is a valid symbol. do not handle\n");
+      // fprintf(stderr, "ERROR is a valid symbol. do not handle\n");
       // lexer->mark_end(lexer);
       // lexer->result_symbol = ERROR;
       return false;
@@ -2778,9 +2778,9 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
 
   if (valid_symbols[LINE_START] && state->pos.col == 0 &&
       lexer->lookahead != '\n' && lexer->lookahead != '\0') {
-      fprintf(stderr, "possible line start\n");
-      debug_pos(&state->pos);
-      fprintf(stderr, "\n");
+      // fprintf(stderr, "possible line start\n");
+      // debug_pos(&state->pos);
+      // fprintf(stderr, "\n");
       lexer->mark_end(lexer);
       lexer->result_symbol = LINE_START;
       parse_new_line(state, lexer);
@@ -2798,9 +2798,9 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
   // Detect a newline
   if (lexer->lookahead == '\n' && valid_symbols[LINE_END]) {
     state->pos.col = lexer->get_column(lexer);
-      fprintf(stderr, "possible line end: ");
-      debug_pos(&state->pos);
-      fprintf(stderr, "\n");
+      // fprintf(stderr, "possible line end: ");
+      // debug_pos(&state->pos);
+      // fprintf(stderr, "\n");
     state->pos.row++;
     state->pos.col = 0;
     lexer->advance(lexer, false);
@@ -2866,11 +2866,11 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
 
   if (valid_symbols[MATH]) {
       size_t index = stack_find_any(&state->results, &wrapper.curr_pos, false);
-      fprintf(stderr, "attempting to find MATH %zu\nlexer position at ", index);
-      debug_pos(&wrapper.curr_pos);
-      fprintf(stderr, "\n");
-      print_stack(&state->results);
-      fprintf(stderr, "---\n");
+      // fprintf(stderr, "attempting to find MATH %zu\nlexer position at ", index);
+      // debug_pos(&wrapper.curr_pos);
+      // fprintf(stderr, "\n");
+      // print_stack(&state->results);
+      // fprintf(stderr, "---\n");
       if (index < not_found) {
           ParseResult element = *array_get(&state->results, index);
           if (element.token == EQ_DISPLAY || element.token == EQ_INLINE) {
