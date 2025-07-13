@@ -20,6 +20,8 @@ module.exports = grammar({
     $.empty,
     $._line_start,
     $.line_end,
+    $.indent,
+    $.dedent,
     $._emph_star_start,
     $._emph_star_end,
     $._emph_under_start,
@@ -46,6 +48,8 @@ module.exports = grammar({
     $.attr_value,
     $.verbatim,
     $.math,
+    $.ordered,
+    $.unordered,
     $._no_parse,
     $._unused_error,
   ],
@@ -57,7 +61,16 @@ module.exports = grammar({
 
     _yaml: ($) => choice(),
     paragraph: ($) =>
-      prec.right(3, seq(repeat1($._line), optional($.paragraph_end))),
+      prec.right(
+        3,
+        seq(
+          optional($._line_start),
+          $._line_content,
+          choice($.line_break, $.line_end),
+          repeat($._line),
+          optional($.paragraph_end),
+        ),
+      ),
     line_break: ($) =>
       prec.right(
         2,
@@ -98,7 +111,12 @@ module.exports = grammar({
     _line: ($) =>
       prec.right(
         2,
-        seq($._line_start, $._line_content, choice($.line_break, $.line_end)),
+        seq(
+          $._line_start,
+          repeat($.indent),
+          $._line_content,
+          choice($.line_break, $.line_end),
+        ),
       ), //prec.right(seq($._line, optional($.line_end))),
     inline_math: ($) => seq("$", $.math, "$"),
     display_math: ($) => seq("$$", $.math, "$$"),
@@ -124,7 +142,8 @@ module.exports = grammar({
     double_quote: ($) => '"',
     symbols: ($) => /[@#\$%\^\&\*\(\)_\+\=\-/><~\\\{\}]/,
     literal: ($) => prec(10, /\\[@#\$%\^\&\*\(\)_\+\=\-/><~\\ ]/),
-    content: ($) => repeat1($.paragraph), //seq(, repeat($.line_end))),
+    // content: ($) => repeat1($.paragraph),
+    content: ($) => repeat1(choice($.paragraph, $.list)),
     _section: ($) => choice($.heading, $.content),
     heading: ($) =>
       prec(
@@ -230,7 +249,17 @@ module.exports = grammar({
     // attr_class_: ($) => seq($.period, $.attr_class),
     attr_keyvalue: ($) =>
       seq(field("key", $.attr_key), "=", field("value", $.attr_value)),
-    // hyperlink: ($) => seq("[", $._line_content, "]", "(", /[^)]+/, ")"),
+    list_item: ($) =>
+      prec.right(
+        4,
+        seq(
+          choice($.ordered, $.unordered),
+          alias($._no_parse, $.spacing),
+          repeat1($.content),
+        ),
+      ),
+    list: ($) =>
+      seq(repeat1(seq($._line_start, repeat($.indent), $.list_item)), $.dedent),
   },
 
   conflicts: ($) => [

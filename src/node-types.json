@@ -61,11 +61,26 @@
       "required": true,
       "types": [
         {
-          "type": "line_end",
+          "type": "list",
           "named": true
         },
         {
           "type": "paragraph",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "display_math",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "math",
           "named": true
         }
       ]
@@ -92,6 +107,10 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
@@ -105,6 +124,10 @@
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -206,11 +229,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -281,11 +312,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -356,11 +395,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -431,11 +478,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -506,11 +561,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -581,11 +644,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -664,11 +735,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -731,6 +810,21 @@
     }
   },
   {
+    "type": "inline_math",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "math",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "line_break",
     "named": true,
     "fields": {},
@@ -755,6 +849,56 @@
       "types": [
         {
           "type": "empty",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "list",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "dedent",
+          "named": true
+        },
+        {
+          "type": "indent",
+          "named": true
+        },
+        {
+          "type": "list_item",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "list_item",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "content",
+          "named": true
+        },
+        {
+          "type": "ordered",
+          "named": true
+        },
+        {
+          "type": "spacing",
+          "named": true
+        },
+        {
+          "type": "unordered",
           "named": true
         }
       ]
@@ -786,11 +930,23 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "indent",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -974,11 +1130,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -1049,11 +1213,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -1128,11 +1300,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -1207,11 +1387,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -1286,11 +1474,19 @@
           "named": true
         },
         {
+          "type": "display_math",
+          "named": true
+        },
+        {
           "type": "emph",
           "named": true
         },
         {
           "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "inline_math",
           "named": true
         },
         {
@@ -1373,6 +1569,14 @@
     "named": false
   },
   {
+    "type": "$",
+    "named": false
+  },
+  {
+    "type": "$$",
+    "named": false
+  },
+  {
     "type": "=",
     "named": false
   },
@@ -1426,6 +1630,10 @@
     "named": true
   },
   {
+    "type": "dedent",
+    "named": true
+  },
+  {
     "type": "double_quote",
     "named": true
   },
@@ -1446,6 +1654,10 @@
     "named": true
   },
   {
+    "type": "indent",
+    "named": true
+  },
+  {
     "type": "line_end",
     "named": true
   },
@@ -1455,6 +1667,14 @@
   },
   {
     "type": "link_start",
+    "named": true
+  },
+  {
+    "type": "math",
+    "named": true
+  },
+  {
+    "type": "ordered",
     "named": true
   },
   {
@@ -1471,6 +1691,10 @@
   },
   {
     "type": "single_quote",
+    "named": true
+  },
+  {
+    "type": "spacing",
     "named": true
   },
   {
@@ -1507,6 +1731,10 @@
   },
   {
     "type": "symbols",
+    "named": true
+  },
+  {
+    "type": "unordered",
     "named": true
   },
   {
