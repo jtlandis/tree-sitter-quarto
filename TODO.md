@@ -21,9 +21,9 @@ In-line Scanners:
 Other scanner options:
  - [ ] code block syntax
  - [ ] div style blocks "::: callout  :::"
- - [ ] list items
+ - [x] list items
        - [ ] 
- - [ ] indentations
+ - [x] indentations
  - [ ] check boxes
  - [ ] pipe/other tables???
  - [ ] block eqauations
