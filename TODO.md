@@ -13,7 +13,7 @@ In-line Scanners:
   * [x] `verbatim`
   * [x] `` `literal looking` ``
   * [ ] citation links
-  * [ ] equations
+  * [x] equations
   * [ ] definitions
   * [ ] yaml header
   * [ ] footnotes
@@ -21,8 +21,9 @@ In-line Scanners:
 Other scanner options:
  - [ ] code block syntax
  - [ ] div style blocks "::: callout  :::"
- - [ ] indentations
  - [ ] list items
+       - [ ] 
+ - [ ] indentations
  - [ ] check boxes
  - [ ] pipe/other tables???
  - [ ] block eqauations

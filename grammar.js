@@ -18,8 +18,10 @@ module.exports = grammar({
 
   externals: ($) => [
     $.empty,
-    $._line_start,
+    $.line_start,
     $.line_end,
+    $.indent,
+    $.dedent,
     $._emph_star_start,
     $._emph_star_end,
     $._emph_under_start,
@@ -46,6 +48,10 @@ module.exports = grammar({
     $.attr_value,
     $.verbatim,
     $.math,
+    $.ordered,
+    $.unordered,
+    $.list_start,
+    $.list_item_end,
     $._no_parse,
     $._unused_error,
   ],
@@ -57,7 +63,15 @@ module.exports = grammar({
 
     _yaml: ($) => choice(),
     paragraph: ($) =>
-      prec.right(3, seq(repeat1($._line), optional($.paragraph_end))),
+      prec.right(
+        3,
+        seq(
+          optional($._new_line_start),
+          $._line_content,
+          repeat(seq($._new_line_end, $._new_line_start, $._line_content)),
+          $.paragraph_end,
+        ),
+      ),
     line_break: ($) =>
       prec.right(
         2,
@@ -67,14 +81,7 @@ module.exports = grammar({
         ),
       ),
     paragraph_end: ($) =>
-      prec.right(
-        4,
-        repeat1($.line_end),
-        // choice(
-        //   seq($.line_break, repeat1($.line_end)),
-        //   seq($.line_end, repeat1($.line_end)),
-        // ),
-      ),
+      prec.right(4, choice(repeat1($.line_end), seq($.line_end, $.empty))),
     _line_content: ($) =>
       repeat1(
         choice(
@@ -95,11 +102,12 @@ module.exports = grammar({
           alias($._no_parse, $.literal),
         ),
       ), //, $.whitespace)), //prec(1, repeat1(choice($.word, $.whitespace))),
-    _line: ($) =>
-      prec.right(
-        2,
-        seq($._line_start, $._line_content, choice($.line_break, $.line_end)),
-      ), //prec.right(seq($._line, optional($.line_end))),
+    _new_line_end: ($) => prec(20, choice($.line_end, $.line_break)),
+    _new_line_start: ($) => seq($.line_start, repeat($.indent)),
+    _empty_line: ($) => seq($._new_line_start, $._new_line_end),
+    line: ($) => prec.right(2, seq($._line_content, $._new_line_end)),
+    _literal_line: ($) => prec.right(2, seq($._line_content, $.line_end)),
+    _complete_line: ($) => prec.right(2, seq($._new_line_start, $.line)), //prec.right(seq($._line, optional($.line_end))),
     inline_math: ($) => seq("$", $.math, "$"),
     display_math: ($) => seq("$$", $.math, "$$"),
     word: ($) => /[\p{L}\p{N}]+/,
@@ -124,13 +132,16 @@ module.exports = grammar({
     double_quote: ($) => '"',
     symbols: ($) => /[@#\$%\^\&\*\(\)_\+\=\-/><~\\\{\}]/,
     literal: ($) => prec(10, /\\[@#\$%\^\&\*\(\)_\+\=\-/><~\\ ]/),
-    content: ($) => repeat1($.paragraph), //seq(, repeat($.line_end))),
+    // content: ($) => repeat1($.paragraph),
+    _block_content: ($) =>
+      choice($.paragraph, seq(optional($._new_line_start), $.list)),
+    content: ($) => prec.right(repeat1($._block_content)),
     _section: ($) => choice($.heading, $.content),
     heading: ($) =>
       prec(
         5,
         seq(
-          $._line_start,
+          $.line_start,
           choice(
             $.heading_1,
             $.heading_2,
@@ -166,17 +177,6 @@ module.exports = grammar({
         $._line_content,
         alias($._emph_under_end, $.emph_end),
       ),
-    _emph_content: ($) =>
-      prec.right(
-        repeat1(
-          seq(
-            repeat1(
-              choice($.word, $.puncuation, $.literal, $.symbols, $.strong),
-            ),
-            optional(choice($.line_break, $.line_end)),
-          ),
-        ),
-      ),
     strong: ($) => choice(prec(3, $._strong_star), prec(3, $._strong_under)),
     // strong: ($) => $._strong_star,
     _strong_star: ($) =>
@@ -190,15 +190,6 @@ module.exports = grammar({
         alias($._strong_under_start, $.strong_start),
         $._line_content,
         alias($._strong_under_end, $.strong_end),
-      ),
-    _strong_content: ($) =>
-      prec.right(
-        repeat1(
-          seq(
-            repeat1(choice($.word, $.puncuation, $.literal, $.symbols, $.emph)),
-            optional(choice($.line_break, $.line_end)),
-          ),
-        ),
       ),
     superscript: ($) =>
       seq($.superscript_start, $._line_content, $.superscript_end),
@@ -230,13 +221,32 @@ module.exports = grammar({
     // attr_class_: ($) => seq($.period, $.attr_class),
     attr_keyvalue: ($) =>
       seq(field("key", $.attr_key), "=", field("value", $.attr_value)),
-    // hyperlink: ($) => seq("[", $._line_content, "]", "(", /[^)]+/, ")"),
+
+    list_item: ($) =>
+      prec.right(
+        4,
+        seq(
+          choice($.ordered, $.unordered),
+          alias($._no_parse, $.spacing),
+          $.content,
+          optional($.list_item_end),
+          // choice($.content, alias($._literal_line, $.line)),
+        ),
+      ),
+    // _list_item: ($) => choice($.list, $.list_item),
+    list: ($) =>
+      prec.right(
+        seq(
+          $.list_start,
+          $.list_item,
+          repeat(seq($._new_line_start, $.list_item)),
+          optional($.dedent),
+        ),
+      ),
   },
 
   conflicts: ($) => [
-    [$._emph_content],
-    [$._strong_content],
-    [$.content],
+    // [$.content],
     // [$.paragraph],
     // [$.paragraph, $.line],
     // [$.paragraph, $.word],

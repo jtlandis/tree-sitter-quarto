@@ -36,3 +36,8 @@ dist/
 *.wasm
 *.obj
 *.o
+
+*.qmd
+_output/
+
+/.quarto/

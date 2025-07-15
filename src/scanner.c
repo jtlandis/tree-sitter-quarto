@@ -16,6 +16,8 @@ enum TokenType {
   EMPTY,
   LINE_START,
   LINE_END,        // Token type for line_end
+  INDENT,
+  DEDENT,
   EMPHASIS_STAR_START,  // Token type for emphasis_start
   EMPHASIS_STAR_END,     // Token type for emphasis_end
   EMPHASIS_UNDER_START,
@@ -42,9 +44,131 @@ enum TokenType {
   ATTR_VALUE,
   INLINE_VERBATIM,
   MATH,
+  ORDERED,
+  UNORDERED,
+  LIST_START,
+  LIST_ITEM_END,
   NO_PARSE,
   ERROR, //General Emphasis
 };
+
+static void print_valid_symbols(const bool *symbols) {
+    fprintf(stderr, "Valid symbols: ");
+    if (symbols[EMPTY]) {
+        fprintf(stderr, "EMPTY ");
+    }
+    if (symbols[LINE_START]) {
+     fprintf(stderr, "LINE_START ");
+    }
+    if (symbols[LINE_END]) {
+     fprintf(stderr, "LINE_END ");
+    }
+    if (symbols[INDENT]) {
+     fprintf(stderr, "INDENT ");
+    }
+    if (symbols[DEDENT]) {
+     fprintf(stderr, "DEDENT ");
+    }
+    if (symbols[EMPHASIS_STAR_START]) {
+     fprintf(stderr, "EMPHASIS_STAR_START ");
+    }
+    if (symbols[EMPHASIS_STAR_END]) {
+     fprintf(stderr, "EMPHASIS_STAR_END ");
+    }
+    if (symbols[EMPHASIS_UNDER_START]) {
+     fprintf(stderr, "EMPHASIS_UNDER_START ");
+    }
+    if (symbols[EMPHASIS_UNDER_END]) {
+     fprintf(stderr, "EMPHASIS_UNDER_END ");
+    }
+    if (symbols[STRONG_STAR_START]) {
+     fprintf(stderr, "STRONG_STAR_START ");
+    }
+    if (symbols[STRONG_STAR_END]) {
+     fprintf(stderr, "STRONG_STAR_END ");
+    }
+    if (symbols[STRONG_UNDER_START]) {
+     fprintf(stderr, "STRONG_UNDER_START ");
+    }
+    if (symbols[STRONG_UNDER_END]) {
+     fprintf(stderr, "STRONG_UNDER_END ");
+    }
+    if (symbols[SUPERSCRIPT_START]) {
+     fprintf(stderr, "SUPERSCRIPT_START ");
+    }
+    if (symbols[SUPERSCRIPT_END]) {
+     fprintf(stderr, "SUPERSCRIPT_END ");
+    }
+    if (symbols[SUBSCRIPT_START]) {
+     fprintf(stderr, "SUBSCRIPT_START ");
+    }
+    if (symbols[SUBSCRIPT_END]) {
+     fprintf(stderr, "SUBSCRIPT_END ");
+    }
+    if (symbols[STRIKE_START]) {
+     fprintf(stderr, "STRIKE_START ");
+    }
+    if (symbols[STRIKE_END]) {
+     fprintf(stderr, "STRIKE_END ");
+    }
+    if (symbols[BRACKET_START]) {
+     fprintf(stderr, "BRACKET_START ");
+    }
+    if (symbols[BRACKET_END]) {
+     fprintf(stderr, "BRACKET_END ");
+    }
+    if (symbols[LINK_START]) {
+     fprintf(stderr, "LINK_START ");
+    }
+    if (symbols[LINK_END]) {
+     fprintf(stderr, "LINK_END ");
+    }
+    if (symbols[CURLY_START]) {
+     fprintf(stderr, "CURLY_START ");
+    }
+    if (symbols[CURLY_END]) {
+     fprintf(stderr, "CURLY_END ");
+    }
+    if (symbols[ATTR_ID]) {
+     fprintf(stderr, "ATTR_ID ");
+    }
+    if (symbols[ATTR_CLASS]) {
+     fprintf(stderr, "ATTR_CLASS ");
+    }
+    if (symbols[ATTR_KEY]) {
+     fprintf(stderr, "ATTR_KEY ");
+    }
+    if (symbols[ATTR_VALUE]) {
+     fprintf(stderr, "ATTR_VALUE ");
+    }
+    if (symbols[INLINE_VERBATIM]) {
+     fprintf(stderr, "INLINE_VERBATIM ");
+    }
+    if (symbols[MATH]) {
+     fprintf(stderr, "MATH ");
+    }
+    if (symbols[ORDERED]) {
+     fprintf(stderr, "ORDERED ");
+    }
+    if (symbols[UNORDERED]) {
+     fprintf(stderr, "UNORDERED ");
+    }
+    if (symbols[LIST_START]) {
+     fprintf(stderr, "LIST_START ");
+    }
+    if (symbols[LIST_ITEM_END]) {
+     fprintf(stderr, "LIST_ITEM_END ");
+    }
+    if (symbols[NO_PARSE]) {
+     fprintf(stderr, "NO_PARSE ");
+    }
+    if (symbols[ERROR]) {
+     fprintf(stderr, "ERROR ");
+    }
+
+    fprintf(stderr, "\n");
+
+}
 
 enum ParseToken {
     NONE,
@@ -69,6 +193,12 @@ enum ParseToken {
     BACKQUOTE,
     EQ_INLINE,
     EQ_DISPLAY,
+    UNORDERED_LIST_ITEM,
+    ORDERED_LIST_ITEM,
+    INDENT_TOKEN,
+    DEDENT_TOKEN,
+    LIST_START_TOKEN,
+    LIST_ITEM_END_TOKEN,
 };
 
 
@@ -85,15 +215,47 @@ enum ParseToken {
 //   uint32_t col;
 // } WithinRange;
 
+
+typedef Array(uint8_t) u8Array;
+
+typedef Array(uint32_t) u32Array;
+
+typedef Array(int32_t) i32Array;
+
+#define Range(T) \
+    struct { \
+        T start; \
+        T end; \
+    }
+
+#define DEFINE_RANGE_NEW(T, R, name) \
+    static inline R name(T start, T end) { \
+        R obj; \
+        obj.start = start; \
+        obj.end = end; \
+        return obj; \
+    }
+
 typedef struct Pos {
     uint32_t row;
     uint32_t col;
 } Pos;
 
-typedef struct Range {
-    Pos start;
-    Pos end;
-} Range;
+
+typedef Range(Pos) PosRange;
+DEFINE_RANGE_NEW(Pos, PosRange, new_pos_range);
+
+typedef Range(uint8_t) u8Range;
+DEFINE_RANGE_NEW(uint8_t, u8Range, new_u8_range);
+
+typedef struct u8Mid {
+    u8Range range;
+    uint8_t mid;
+} u8Mid;
+
+typedef Array(u8Mid) u8MidArray;
+
+typedef Array(u8Range) u8RangeArray;
 
 enum RangeType {
     DISJOINT_LESS,
@@ -110,9 +272,9 @@ typedef struct LexWrap {
     Pos curr_pos;
     uint32_t pos;
     uint32_t line;
-    Array(int32_t) buffer;
-    Array(uint32_t) line_width;
-    Array(uint32_t) new_line_loc;
+    i32Array buffer;
+    u32Array line_width;
+    u32Array new_line_loc;
 } LexWrap;
 
 
@@ -282,22 +444,17 @@ static Pos lex_current_position(LexWrap *wrapper) {
 typedef struct ParseResult {
     bool success;
     uint32_t length;
-    Range range;
+    PosRange range;
     enum ParseToken token;
 } ParseResult;
 
-static Range new_range(Pos start, Pos end) {
-    Range obj;
-    obj.start = start;
-    obj.end = end;
-    return obj;
-}
+
 
 static ParseResult empty_parse_result() {
     ParseResult obj;
     obj.success = false;
     obj.length = 0;
-    obj.range = new_range(new_position(0, 0), new_position(0, 0));
+    obj.range = new_pos_range(new_position(0, 0), new_position(0, 0));
     obj.token = NONE;
     return obj;
 }
@@ -306,7 +463,7 @@ static ParseResult new_parse_result(Pos start, Pos end, enum ParseToken token, u
     ParseResult obj;
     obj.success = success;
     obj.length = length;
-    obj.range = new_range(start, end);
+    obj.range = new_pos_range(start, end);
     obj.token = token;
     return obj;
 }
@@ -323,28 +480,24 @@ static ParseResult new_parse_result_from(ParseResult *other) {
 typedef Array(ParseResult) ParseResultArray;
 // typedef Array(uint32_t) IndexArray;
 
-typedef Array(uint8_t) u8Array;
-
-typedef Array(uint32_t) u32Array;
-
 /// checks if x is within (inclusive) the range y
-static bool pos_within_range(Pos *x, Range *y) {
+static bool pos_within_range(Pos *x, PosRange *y) {
     return pos_le(x, &y->end) && pos_ge(x, &y->start);
 }
 
 /// x:   |----|
 /// y:  |-------|
-static bool range_within(Range *x, Range *y) {
+static bool range_within(PosRange *x, PosRange *y) {
     return pos_gt(&x->end, &y->start) && pos_lt(&x->start, &y->end);
 }
 
 /// x: |---|
 /// y:       |----|
-static bool range_disjoint(Range *x, Range *y) {
+static bool range_disjoint(PosRange *x, PosRange *y) {
     return pos_ge(&y->start, &x->end) ||  pos_ge(&x->start, &y->end);
 }
 
-static enum RangeType classify_range(Range *x, Range *y) {
+static enum RangeType classify_range(PosRange *x, PosRange *y) {
     // |----|
     //        |----|
     if (pos_eq(&x->end, &y->end) && pos_eq(&x->start, &y->start)) {
@@ -389,7 +542,7 @@ static void print_stack(ParseResultArray *stack) {
 
 
 
-static size_t stack_insert_(ParseResultArray* array, ParseResult element, size_t start_index) {
+static size_t stack_insert_(ParseResultArray* array, ParseResult element, size_t start_index, bool allow_dup) {
     // fprintf(stderr, "attempting to insert:\n");
     // print_parse_result(&element);
     // fprintf(stderr, "current stack:\n");
@@ -455,6 +608,103 @@ static size_t stack_insert_(ParseResultArray* array, ParseResult element, size_t
                     continue;
                 }
                 case IDENTICAL: {
+                    if (allow_dup || result->token != element.token) {
+                        array_insert(array, i, element);
+                        out = i;
+                    }
+                    goto func_end;
+                }
+            }
+
+            continue_outer: {
+                // fprintf(stderr, "inner loop end index: %zu\n", i);
+            };
+        }
+    }
+
+    func_end: {
+        if (out == not_found) {
+            // fprintf(stderr, "attempting to insert: ");
+            // print_parse_result(&element);
+        }
+        // fprintf(stderr, "insert was %ssuccessful: \n", out==not_found ? "un" : "");
+        // print_stack(array);
+        return out;
+    }
+
+
+}
+
+static size_t stack_insert_simulate(ParseResultArray* array, ParseResult element, size_t start_index, bool allow_dup) {
+    // fprintf(stderr, "attempting to insert:\n");
+    // print_parse_result(&element);
+    // fprintf(stderr, "current stack:\n");
+    // print_stack(array);
+    size_t out = not_found;
+    if (array->size == 0) {
+        // array_push(array, element);
+        out = 0;
+        goto func_end;
+    } else {
+        for (size_t i = start_index; i < array->size; i++) {
+            // fprintf(stderr, "loop iter %zu\n", i);
+            ParseResult *result = &array->contents[i];
+            switch (classify_range(&element.range, &result->range)) {
+                case OVERLAP: {
+                    // fprintf(stderr, "OVERLAP found [%i, %i] - [%i, %i] ... [%i, %i] - [%i, %i] ",
+                        // element.range.start.row,
+                        // element.range.start.col,
+                        // element.range.end.row,
+                        // element.range.end.col,
+                        // result->range.start.row, result->range.start.col,
+                        // result->range.end.row, result->range.end.col);
+                    out = not_found;
+                    goto func_end;
+                }
+                case PARENT: {
+                    // array_insert(array, i, element);
+                    out = i;
+                    goto func_end;
+                }
+                case DISJOINT_LESS: {
+                    // array_insert(array, i, element);
+                    out = i;
+                    goto func_end;
+                }
+                case DISJOINT_GREATER: {
+                    // fprintf(stderr, "attempting to find non-dijoint_greater\n");
+                    // keep going until next element is end OR
+                    // until this element is not DISJOIN_GREATER with
+                    // the next element
+                    for (size_t j = i; j < array->size; j++) {
+                        // fprintf(stderr, "inner loop iter %zu\n", j);
+                        result = &array->contents[j];
+                        switch (classify_range(&element.range, &result->range)) {
+                            case DISJOINT_GREATER: {
+                                break;
+                            }
+                            default: {
+                                // fprintf(stderr, "found a non-disjoint_greater relationship with index %zu\n", j);
+                                i = j;
+                                i--;
+                                goto continue_outer;
+                            }
+                        }
+                    }
+                    out = array->size;
+                    // array_push(array, element);
+                    // array_insert(array, i + 1, element);
+                    // out = i + 1;
+                    goto func_end;
+                }
+                case CHILD: {
+                    continue;
+                }
+                case IDENTICAL: {
+                    if (allow_dup || result->token != element.token) {
+                        // array_insert(array, i, element);
+                        out = i;
+                    }
                     goto func_end;
                 }
             }
@@ -479,7 +729,7 @@ static size_t stack_insert_(ParseResultArray* array, ParseResult element, size_t
 }
 
 static size_t stack_insert(ParseResultArray* array, ParseResult element) {
-    return stack_insert_(array, element, 0);
+    return stack_insert_(array, element, 0, false);
 }
 
 
@@ -535,7 +785,7 @@ static size_t stack_find_token_contains_pos(ParseResultArray *array, Pos *pos, e
     return not_found;
 }
 
-static size_t stack_find_token_within_range(ParseResultArray *array, enum ParseToken token, Range *range) {
+static size_t stack_find_token_within_range(ParseResultArray *array, enum ParseToken token, PosRange *range) {
     ParseResult *element;
     for (size_t i = 0; i < array->size; i++) {
         element = &array->contents[i];
@@ -573,7 +823,7 @@ static void stack_dont_parse(ParseResultArray* array, size_t index) {
             start.range.end.col++;
             start.length = 1;
             start.token = DO_NOT_PARSE;
-            Range element_range = element->range;
+            PosRange element_range = element->range;
             // fprintf(stderr, "\n looking for empty token between ");
             // debug_pos(&element_range.start);
             // fprintf(stderr, " - ");
@@ -585,7 +835,7 @@ static void stack_dont_parse(ParseResultArray* array, size_t index) {
             end.range.start.col--;
             array_erase(array, index);
             size_t i = stack_insert(array, start);
-            stack_insert_(array, end, i);
+            stack_insert_(array, end, i, false);
             size_t has_empty = stack_find_token_within_range(array, EMPTY_TOKEN, &element_range);
             // fprintf(stderr, "found EMPTY_TOKEN at %zu\n", has_empty);
             if (has_empty < not_found) {
@@ -706,7 +956,7 @@ static ParseResult parse_parenthesis(LexWrap *wrapper, ParseResultArray *stack) 
 
     lex_advance(wrapper, false);
     int32_t lookahead = lex_lookahead(wrapper);
-    int32_t last_char = '(';
+    // int32_t last_char = '(';
     uint8_t new_line_count = 0;
     if (lookahead == ')') {
         // insert empty token
@@ -789,7 +1039,7 @@ static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
     }
     lex_advance(wrapper, false);
     int32_t lookahead = lex_lookahead(wrapper);
-    int32_t last_char = '{';
+    // int32_t last_char = '{';
     uint8_t new_line_count = 0;
     ParseResult item = empty_parse_result();
     item.range.start = wrapper->curr_pos;
@@ -876,7 +1126,7 @@ static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
                         lex_backtrack_n(wrapper, 1);
                         size_t index = stack_insert(stack, item_clone);
                         if (index < not_found) {
-                            stack_insert_(stack, item, index);
+                            stack_insert_(stack, item, index, false);
                         }
                         break;
                     }
@@ -1003,8 +1253,8 @@ static ParseResult parse_bracket(LexWrap *wrapper, ParseResultArray *stack, uint
     bracket_count++;
     int32_t lookahead = lex_lookahead(wrapper);
     int32_t last_char = '[';
-    uint32_t last_lex_pos = 0;
-    uint8_t end_char_count = 0;
+    // uint32_t last_lex_pos = 0;
+    // uint8_t end_char_count = 0;
     uint8_t new_line_count = 0;
     while(lookahead != '\0') {
         switch (lookahead) {
@@ -1036,7 +1286,7 @@ static ParseResult parse_bracket(LexWrap *wrapper, ParseResultArray *stack, uint
                             size_t index = stack_find_token_within_range(stack, HYPERLINK, &res.range);
                             if (index < not_found) {
                                 ParseResult *to_remove = array_get(stack, index);
-                                Range element_range = to_remove->range;
+                                PosRange element_range = to_remove->range;
                                 array_erase(stack, index);
                                 size_t link_index = stack_find_token_within_range(stack, LINK, &element_range);
                                 if (link_index < not_found) {
@@ -1047,8 +1297,8 @@ static ParseResult parse_bracket(LexWrap *wrapper, ParseResultArray *stack, uint
                                     stack_dont_parse(stack, bracket_index);
                                 }
                                 size_t attr_index = stack_find_token_within_range(stack, CURLY_ATTR, &element_range);
-                                if (bracket_index < not_found) {
-                                    stack_dont_parse(stack, bracket_index);
+                                if (attr_index < not_found) {
+                                    stack_dont_parse(stack, attr_index);
                                 }
                             }
                             lookahead = lex_lookahead(wrapper);
@@ -2514,9 +2764,13 @@ static ParseResult parse_tilde(LexWrap *wrapper, ParseResultArray* stack, uint8_
 
 
 typedef struct {
+  bool in_paragraph; // State to track if we're inside a paragraph
   uint8_t bracket_count;
+  uint8_t new_line_count; // State to track the number of consecutive new lines
+  uint32_t line_to_parse; // State to track the last parsed line number
   Pos pos;
   ParseResultArray results; // State to track if we're inside an emphasis block
+  u8MidArray indents; // State to track the indentation levels
 } ScannerState;
 
 // static void print_scanner_state(const ScannerState *state) {
@@ -2546,8 +2800,15 @@ typedef struct {
 void *tree_sitter_quarto_external_scanner_create() {
 //   fprintf(stderr, "attempting to create scanner... ");
   ScannerState *state = (ScannerState *)malloc(sizeof(ScannerState));
+  state->in_paragraph = false; // Initialize the in_paragraph state
+  state->bracket_count = 0; // Initialize the bracket count
+  state->new_line_count = 0; // Initialize the new line count
   state->pos = new_position(0, 0);
+  state->line_to_parse = 0;
   array_init(&state->results); // Initialize the state
+  array_init(&state->indents); // Initialize the indentation levels array
+  u8Mid mid = (u8Mid) {new_u8_range(0, 0), 0 } ;
+  array_push(&state->indents, mid); // Start with an initial indentation level of 0
 //   fprintf(stderr, "returning scanner\n");
   return state;
 }
@@ -2555,7 +2816,8 @@ void *tree_sitter_quarto_external_scanner_create() {
 void tree_sitter_quarto_external_scanner_destroy(void *payload) {
 //   fprintf(stderr, "attempting to destroy scanner... ");
   ScannerState *state = (ScannerState *)payload;
-//   array_delete(&state->results); // Free the heap memory used by the array
+  array_delete(&state->results); // Free the heap memory used by the array
+  array_delete(&state->indents); // Free the heap memory used by the indentation array
   free(payload); // Free the allocated state
 //   fprintf(stderr, "freeing memory and exiting\n");
 }
@@ -2565,8 +2827,17 @@ unsigned tree_sitter_quarto_external_scanner_serialize(void *payload, char *buff
   ScannerState *state = (ScannerState *)payload;
   // return 0;
   size_t offset = 0;
+  memcpy(buffer + offset, &state->in_paragraph, sizeof(bool));
+  offset += sizeof(bool);
+
   memcpy(buffer + offset, &state->bracket_count, sizeof(uint8_t));
   offset += sizeof(uint8_t);
+  memcpy(buffer + offset, &state->new_line_count, sizeof(uint8_t));
+  offset += sizeof(uint8_t);
+
+  memcpy(buffer + offset, &state->line_to_parse, sizeof(uint32_t));
+  offset += sizeof(uint32_t);
+
   // get the position
   memcpy(buffer + offset, &state->pos.row, sizeof(uint32_t));
   offset += sizeof(uint32_t);
@@ -2581,6 +2852,17 @@ unsigned tree_sitter_quarto_external_scanner_serialize(void *payload, char *buff
       ParseResult *res = &state->results.contents[i];
       memcpy(buffer + offset, res, sizeof(ParseResult));
       offset += sizeof(ParseResult);
+  }
+
+  // Serialize results array size
+  memcpy(buffer + offset, &state->indents.size, sizeof(uint32_t));
+  offset += sizeof(uint32_t);
+
+  // Serialize each ParseResult
+  for (int i = 0; i < state->indents.size; i++) {
+      u8Mid *res = &state->indents.contents[i];
+      memcpy(buffer + offset, res, sizeof(u8Mid));
+      offset += sizeof(u8Mid);
   }
 //   fprintf(stderr, "%zu bytes written... \n", offset);
   return offset;
@@ -2600,8 +2882,17 @@ void tree_sitter_quarto_external_scanner_deserialize(void *payload, const char *
     ScannerState *state = (ScannerState *)payload;
     size_t offset = 0;
 
+    memcpy(&state->in_paragraph, buffer + offset, sizeof(bool));
+    offset += sizeof(bool);
+
     memcpy(&state->bracket_count, buffer + offset, sizeof(uint8_t));
     offset += sizeof(uint8_t);
+
+    memcpy(&state->new_line_count, buffer + offset, sizeof(uint8_t));
+    offset += sizeof(uint8_t);
+
+    memcpy(&state->line_to_parse, buffer + offset, sizeof(uint32_t));
+    offset += sizeof(uint32_t);
 //     fprintf(stderr, "writing row bits... ");
     memcpy(&state->pos.row, buffer + offset, sizeof(uint32_t));
     offset += sizeof(uint32_t);
@@ -2630,32 +2921,168 @@ void tree_sitter_quarto_external_scanner_deserialize(void *payload, const char *
     // return;
 }
 
+static bool possible_list_item(LexWrap *wrapper) {
+    uint32_t pos = wrapper->pos;
+    int32_t lookahead = lex_lookahead(wrapper);
+    bool res = false;
+    if (lookahead == '(') {
+        lex_advance(wrapper, false);
+        lookahead = lex_lookahead(wrapper);
+    }
+    switch (lookahead) {
+        case '-':
+        case '*':
+        case '+':
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9': {
+            res = true;
+        }
+    }
+    lex_set_position(wrapper, pos);
+    return res;
+}
 
+static ParseResult parse_list_item(LexWrap *wrapper, ScannerState *state) {
+    //ParseResultArray *stack, u8MidArray *indents, uint8_t additional_indent) {
 
+    uint32_t buffer_start_pos = wrapper->pos;
+    u8Range range = new_u8_range(wrapper->curr_pos.col, wrapper->curr_pos.col);
+    ParseResult res = new_parse_result(wrapper->curr_pos, wrapper->curr_pos, NONE, 0, false);
+    ParseResult item = new_parse_result_from(&res);
+    int32_t lookahead = lex_lookahead(wrapper);
+    // create a function to check all possible bullet list
+    // -, *, +...
+    switch (lookahead) {
+        case '-':
+        case '*':
+        case '+': {
+            lex_advance(wrapper, false);
+            lookahead = lex_lookahead(wrapper);
+            item.range.end = wrapper->curr_pos;
+            item.length = wrapper->pos - buffer_start_pos;
+            item.token = UNORDERED_LIST_ITEM;
+            break;
+        }
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+        case '#': {
+            //
+            if (lookahead == '#') {
+                lex_advance(wrapper, false);
+                lookahead = lex_lookahead(wrapper);
+            } else {
+                while(lookahead >= '0' && lookahead <= '9') {
+                    lex_advance(wrapper, false);
+                    lookahead = lex_lookahead(wrapper);
+                }
+            }
+            if (lookahead != '.' || lookahead != ')') {
+                goto return_ele;
+            }
+            lex_advance(wrapper, false);
+            lookahead = lex_lookahead(wrapper);
+            item.range.end = wrapper->curr_pos;
+            item.length = wrapper->pos - buffer_start_pos;
+            item.token = ORDERED_LIST_ITEM;
+            break;
+        }
+    }
 
-// static int32_t other_emphasis(int32_t char_) {
-//     if (char_=='*') {
-//         return '_';
-//     }
-//     return '*';
-// }
+    if (!(lookahead == ' ' || lookahead == '\t')) {
+        goto return_ele;
+    }
+    // whitespace is a success, whatever item is, it is likely
+    // an actual list item
+    item.success = true;
+    // find the next non-whitespace character
+    uint8_t count = 0;
+    while (lookahead == ' ' || lookahead == '\t') {
+        lex_advance(wrapper, false);
+        switch (lookahead) {
+            case ' ': {
+                count++;
+                break;
+            }
+            // this coul cause some issues with tab characters
+            case '\t': {
+                count += 2; // assume tab is 2 spaces
+                break;
+            }
+        }
+        lookahead = lex_lookahead(wrapper);
+    }
+    // uint8_t indent_size = item.length;
+    if (count > 4) {
+        lex_backtrack_n(wrapper, count - 1);
+    }
+    range.end = wrapper->curr_pos.col;
+    // range now contains the start of the list item
+    // to where the theoretical beginning will be.
+    u8Mid mid_range = (u8Mid){ range, item.range.end.col};
+    u8Mid *last_range = array_back(&state->indents);
 
-// static void print_valid_symbols(const bool *valid_symbols) {
-//     // fprintf(stderr, "valid_symbols: [");
-//     // fprintf(stderr, "LINE_START=%d, ", valid_symbols[LINE_START]);
-//     // fprintf(stderr, "LINE_END=%d, ", valid_symbols[LINE_END]);
-//     // fprintf(stderr, "EMPHASIS_STAR_START=%d, ", valid_symbols[EMPHASIS_STAR_START]);
-//     // fprintf(stderr, "EMPHASIS_STAR_END=%d, ", valid_symbols[EMPHASIS_STAR_END]);
-//     // fprintf(stderr, "EMPHASIS_UNDER_START=%d, ", valid_symbols[EMPHASIS_UNDER_START]);
-//     // fprintf(stderr, "EMPHASIS_UNDER_END=%d, ", valid_symbols[EMPHASIS_UNDER_END]);
-//     // fprintf(stderr, "STRONG_STAR_START=%d, ", valid_symbols[STRONG_STAR_START]);
-//     // fprintf(stderr, "STRONG_STAR_END=%d, ", valid_symbols[STRONG_STAR_END]);
-//     // fprintf(stderr, "STRONG_UNDER_START=%d, ", valid_symbols[STRONG_UNDER_START]);
-//     // fprintf(stderr, "STRONG_UNDER_END=%d, ", valid_symbols[STRONG_UNDER_END]);
-//     // fprintf(stderr, "NO_PARSE=%d, ", valid_symbols[NO_PARSE]);
-//     // fprintf(stderr, "ERROR=%d", valid_symbols[ERROR]);
-//     // fprintf(stderr, "]\n");
-// }
+    if (range.start >= last_range->range.end) {
+        // we have a new indent level
+        array_push(&state->indents, mid_range);
+    } else if (range.end <= last_range->range.end) {
+        // we should replace the last indent level
+        last_range->range = mid_range.range;
+        last_range->mid = mid_range.mid;
+    } else if (state->new_line_count == 1 && (mid_range.range.end - mid_range.mid) >= 4) {
+        // special case when parsing immediate next line...
+        // chance that this element isn't parsible
+        item.success = false;
+        goto return_ele;
+    }
+
+    // if (count <= 4) {
+    //     // anything below 5 and this is a normal content, and we
+    //     // can easily mark the expected indentation...
+    //     indent_size += array_back(indents)->end + count + additional_indent;
+    // } else {
+    //     // count was 5 or greater, indicating a verbatim code block
+    //     // indent is atuomatically set to at least 1;
+    //     indent_size += array_back(indents)->end + 1 + additional_indent;
+    //     lex_backtrack_n(wrapper, count - 1);
+    // }
+    // this will be the end of the list item block.
+    res.range.start = item.range.end;
+    res.range.end = wrapper->curr_pos;
+    res.length = res.range.end.col - res.range.start.col;
+    range.end = res.range.end.col;
+    res.token = DO_NOT_PARSE;
+    res.success = true;
+    // array_push(indents, indent_size);
+    return_ele: {
+        if (item.success) {
+            ParseResultArray *stack = &state->results;
+            size_t index = stack_insert(stack, item);
+            if (index < not_found) {
+                stack_insert_(stack, res, index, false);
+            }
+        } else {
+            lex_set_position(wrapper, buffer_start_pos);
+        }
+        return item;
+    }
+
+}
 
 /// called after a new line is detected and the next symbol is not a new_line
 /// This will preparse the next line so that we can accurately identify end position
@@ -2665,26 +3092,160 @@ void tree_sitter_quarto_external_scanner_deserialize(void *payload, const char *
 /// if some internal parse occurs in which we pass a new line, that is fine
 ///
 static void parse_new_line(ScannerState *state, TSLexer *lexer) {
-    // fprintf(stderr, "- calling: parse_new_line()\n");
+    fprintf(stderr, "- calling: parse_new_line()\n");
     // the position of the state should ALWAYS be correct when this
     // function is called.
     LexWrap wrapper = new_lexer(lexer, state->pos);
     int32_t last_char = '\n'; // assume we are at the start... may not always be true
     int32_t lookahead = lex_lookahead(&wrapper);
-    // int8_t indent_size = 0;
-    Pos pos = new_position(0, 0);
+    int8_t indent_size = 0;
     while(lookahead == ' ' || lookahead == '\t') {
         if (lookahead == ' ') {
-            // indent_size++;
+            indent_size++;
         } else {
-            // indent_size += 2;
+            indent_size += 2;
         }
         lex_advance(&wrapper, false);
         lookahead = lex_lookahead(&wrapper);
     }
     if (lookahead=='\n') {
-        return;
+        goto exit_func;
     }
+
+    bool is_list_item = possible_list_item(&wrapper);
+    bool had_indents = state->indents.size > 1;
+    // uint8_t indent_count = 0;
+    // depending on the current indent_size, the state->indents may
+    // decrease in size.
+    uint8_t potential_dedent = 0;
+    if (state->indents.size > 1) {
+        // current state indicates we may be in a list...
+        u8Mid *indent_ele;
+        uint32_t row = wrapper.curr_pos.row;
+        uint32_t col = 0;
+        for (int i = 1; i < state->indents.size; i++) {
+            indent_ele = &state->indents.contents[i];
+            if (indent_ele->range.end >= indent_size) {
+                break;
+            }
+            fprintf(stderr, "indent_level < indent_size (%i < %i) -- creating a indent token\n", indent_ele->range.end, indent_size);
+            ParseResult indent = new_parse_result(
+                new_position(row, col),
+                new_position(row, col + indent_ele->range.end),
+                INDENT_TOKEN, indent_ele->range.end - col, true);
+            col += indent_ele->range.end;
+            stack_insert(&state->results, indent);
+            // indent_count++;
+        }
+
+        for (int i = state->indents.size; i > 1; i--) {
+            indent_ele = &state->indents.contents[i - 1];
+
+            if ((is_list_item && indent_size >= indent_ele->range.start)
+                || (!is_list_item && indent_size >= indent_ele->range.end)) {
+                break;
+            }
+            fprintf(stderr,
+                "indent_size < indent level.start (%i < %i) --  creating a dedent token\n",
+                indent_size, indent_ele->range.start);
+            // but do not insert dedent tokens yet...
+            potential_dedent++;
+
+        }
+    }
+
+    uint32_t n_indents_before = state->indents.size;
+
+    for (int i = 0; i < potential_dedent; i ++) {
+        // decrease the indent stack size.
+        array_pop(&state->indents);
+    }
+
+    uint8_t indent_size_before = indent_size;
+    // uint8_t indent_size_after = indent_size;
+    if (is_list_item) {
+        // indent_size should always be greater than or equal to the last element of the indents array
+        // uint32_t start = wrapper.pos;
+        is_list_item = parse_list_item(&wrapper, state).success;
+        fprintf(stderr, "Parse list item: %s\n", is_list_item ? "success" : "failed");
+        if (is_list_item) {
+            // u8Mid *last_indent = array_back(&state->indents);
+            // indent_size_after += last_indent->range.end - last_indent->range.start;
+            indent_size = 0;
+        }
+    }
+
+    fprintf(stderr, "state->indents.size (%i) -- n_indents_before (%i)\n",state->indents.size, n_indents_before);
+    if (state->indents.size <= n_indents_before) {
+        if (n_indents_before > 1) {
+            ParseResult dedent = new_parse_result(
+                new_position(wrapper.curr_pos.row, 0),
+                new_position(wrapper.curr_pos.row, 0),
+                DEDENT_TOKEN, 0, true);
+            ParseResult list_item_end = new_parse_result(
+                new_position(wrapper.curr_pos.row, 0),
+                new_position(wrapper.curr_pos.row, 0),
+                LIST_ITEM_END_TOKEN, 0, true);
+
+            size_t index = stack_insert_simulate(&state->results, list_item_end, 0, true);
+
+            if (index < not_found) {
+
+                if (is_list_item) {
+                    stack_insert_(&state->results, list_item_end, index, true);
+                }
+
+                for (int i = state->indents.size; i < n_indents_before; i++) {
+                    stack_insert_(&state->results, dedent, index, true);
+                    stack_insert_(&state->results, list_item_end, index, true);
+                }
+            }
+
+
+            fprintf(stderr, "printing debug stack:\n");
+            print_stack(&state->results);
+        }
+
+    } else {
+        fprintf(stderr, "inserting list start\n");
+        ParseResult list_start = new_parse_result(
+            new_position(wrapper.curr_pos.row, indent_size_before),
+            new_position(wrapper.curr_pos.row, indent_size_before),
+            LIST_START_TOKEN, 0, true);
+        stack_insert(&state->results, list_start);
+    }
+
+
+    if (had_indents) {
+        // we had some level indents before this successful insert
+        // so we need to indicate the last list item has ended...
+        if (is_list_item && state->new_line_count == 1) {
+            // end list token
+            ParseResult paragraph_end = new_parse_result(
+                new_position(wrapper.curr_pos.row, 0),
+                new_position(wrapper.curr_pos.row, 0),
+                EMPTY_TOKEN, 0, true);
+            stack_insert(&state->results, paragraph_end);
+        }
+        // if ((state->new_line_count > 1 &&
+        //     (indent_size_after < array_back(&state->indents)->range.end))) {
+        //     u8Mid *last_indent = array_back(&state->indents);
+        //     fprintf(stderr,
+        //         " potential_dedent %i\n prior indent %i\n last indent size: [%i, %i]\n new_line_count %i\n",
+        //         potential_dedent, indent_size_after, last_indent->range.start,  last_indent->range.end, state->new_line_count);
+        //     ParseResult list_item_end = new_parse_result(
+        //         new_position(wrapper.curr_pos.row, 0),
+        //         new_position(wrapper.curr_pos.row, 0),
+        //         LIST_ITEM_END_TOKEN, 0, true);
+        //     stack_insert_(&state->results, list_item_end, 0, true);
+        // }
+
+    }
+
+
+    state->new_line_count = 0; // reset the new line count
+
+
     // decide what to do with the first symbol
     // mostely for items that could expand into other syntatic elements
     // i.e.
@@ -2694,26 +3255,58 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
     // - a div :::
     // - some code block
     // - a line block
-    switch (lookahead) {
-        case '*': {
-            // this could be a list item, or
-            // just inline syntax
-        }
-        default: {
 
+    // at this point we may have 5 space block content...
+    lookahead = lex_lookahead(&wrapper);
+    switch (lookahead) {
+        case ' ':
+        case '\t': {
+            indent_size = 0;
+            while(lookahead == ' ' || lookahead == '\t') {
+                if (lookahead == ' ') {
+                    indent_size++;
+                } else {
+                    indent_size += 2;
+                }
+                lex_advance(&wrapper, false);
+                lookahead = lex_lookahead(&wrapper);
+            }
+            break;
         }
+        case ':': {
+            // could be block content like a div
+            assert(1 > 2);
+            break;
+        }
+        case '`': {
+            // could be a code block
+            assert(2 > 3);
+            break;
+        }
+        case '|': {
+            // could be a table or line block
+            assert(3 > 4);
+            break;
+        }
+        case '>': {
+            // could be a block quote
+            assert(4 > 5);
+            break;
+        }
+        default: {}
     }
+
     last_char = lex_lookahead(&wrapper);
     while(lookahead != '\0') {
         switch (lookahead) {
             case '\n': {
                 // fprintf(stderr, "new-line is next... ending parse_new_line()\n");
-                return;
+                goto exit_func;
             }
             case '\\': {
                 lex_advance(&wrapper, false);
                 if (lex_lookahead(&wrapper) == '\n') {
-                    return;
+                    goto exit_func;
                 }
                 lex_advance(&wrapper, false);
                 last_char = '\\';
@@ -2726,7 +3319,7 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
                     // fprintf(stderr, "about to parse inline: ");
                     // debug_pos(&wrapper.curr_pos);
                     // fprintf(stderr, "\nbehind: %c    lookahead: %c\n", last_char, lookahead);
-                    ParseResult attempt = parse_inline(&wrapper, &state->results, last_char, &state->bracket_count);
+                    parse_inline(&wrapper, &state->results, last_char, &state->bracket_count);
                     last_char = lex_lookbehind(&wrapper);
                     lookahead = lex_lookahead(&wrapper);
                     // debug_pos(&wrapper.curr_pos);
@@ -2740,7 +3333,7 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
         }
         lex_advance(&wrapper, false);
         last_char = lex_lookahead(&wrapper);
-        pos = wrapper.curr_pos;
+        Pos pos = wrapper.curr_pos;
         size_t index = stack_find(&state->results, &pos, DO_NOT_PARSE, false);
         if (index < not_found) {
             ParseResult *no_parse = &state->results.contents[index];
@@ -2754,6 +3347,11 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
 
     }
 
+    exit_func: {
+        return;
+    }
+
+
 
 }
 
@@ -2761,12 +3359,13 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
 
   ScannerState *state = (ScannerState *)payload;
   // print_scanner_state(state);
-  // debug_pos(&state->pos);
-  // fprintf(stderr, "  scanner invoked before: '%c' - is alpha: %i\n",
-  //     lexer->lookahead == '\n' ? 'n' : lexer->lookahead, isalnum((int)lexer->lookahead));
-  // print_stack(&state->results);
-  // printf(stderr, "---\n");
-  // print_valid_symbols(valid_symbols);
+  state->pos.col = lexer->get_column(lexer);
+  debug_pos(&state->pos);
+  fprintf(stderr, "  scanner invoked before: '%c' - is alpha: %i\n",
+      lexer->lookahead == '\n' ? 'n' : lexer->lookahead, isalnum((int)lexer->lookahead));
+  print_valid_symbols(valid_symbols);
+  print_stack(&state->results);
+  fprintf(stderr, "---\n");
   if (valid_symbols[ERROR]) {
       // fprintf(stderr, "ERROR is a valid symbol. do not handle\n");
       // lexer->mark_end(lexer);
@@ -2776,31 +3375,77 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
 
   int32_t last_char = 'a'; // assume it is  a word character.
 
-  if (valid_symbols[LINE_START] && state->pos.col == 0 &&
+  if ((valid_symbols[LINE_START] || valid_symbols[DEDENT] || valid_symbols[LIST_ITEM_END]) && state->pos.col == 0 &&
       lexer->lookahead != '\n' && lexer->lookahead != '\0') {
       // fprintf(stderr, "possible line start\n");
       // debug_pos(&state->pos);
       // fprintf(stderr, "\n");
+      // make scanner track the last parsed line.
       lexer->mark_end(lexer);
-      lexer->result_symbol = LINE_START;
-      parse_new_line(state, lexer);
-      return true;
-  }
-  // Skip whitespace
-  bool skipped_whitespace = false;
-  while (lexer->lookahead == ' ' || lexer->lookahead == '\t') {
-    skipped_whitespace = true;
-    last_char = lexer->lookahead;
-    lexer->advance(lexer, true);
+      // calling this function may reset state->new_line_count
+      if (state->line_to_parse <= state->pos.row) {
+          state->line_to_parse = state->pos.row + 1;
+          parse_new_line(state, lexer);
+      }
+      // if it is possible to dedent, we should do that first before returning a line_start token.
+      Pos pos = new_position(state->pos.row, 0);
+      if (valid_symbols[EMPTY]) {
+          size_t index = stack_find(&state->results, &pos, EMPTY_TOKEN, false);
+          if (index < not_found) {
+              fprintf(stderr, "returing empty\n");
+              lexer->result_symbol = EMPTY;
+              array_erase(&state->results, index);
+              return true;
+          }
+      }
+      if (valid_symbols[LIST_ITEM_END] || valid_symbols[DEDENT]) {
+          size_t index = stack_find_any(&state->results, &pos, false);
+          if (index < not_found) {
+              fprintf(stderr, "found either LIST_ITEM_END or DEDENT\n");
+              ParseResult *res = array_get(&state->results, index);
+                if (res->token == LIST_ITEM_END_TOKEN && valid_symbols[LIST_ITEM_END]) {
+                    fprintf(stderr, "about to return LIST_ITEM_END\n");
+                    lexer->result_symbol = LIST_ITEM_END;
+                    print_parse_result(res);
+                    array_erase(&state->results, index);
+                    return true;
+                } else if (res->token == DEDENT_TOKEN && valid_symbols[DEDENT]) {
+                    fprintf(stderr, "about to return DEDENT\n");
+                    lexer->result_symbol = DEDENT;
+                    print_parse_result(res);
+                    array_erase(&state->results, index);
+                    return true;
+                }
+
+          }
+      }
+      // if (valid_symbols[DEDENT]) {
+      //     size_t index = stack_find(&state->results, &pos, DEDENT_TOKEN, false);
+      //     if (index < not_found) {
+
+      //         fprintf(stderr, "about to dedent\n");
+      //         ParseResult *res = array_get(&state->results, index);
+      //         print_parse_result(res);
+      //           array_erase(&state->results, index);
+      //           lexer->result_symbol = DEDENT;
+      //         return true;
+      //     }
+      // }
+      if (valid_symbols[LINE_START]) {
+          fprintf(stderr, "about to return LINE_START\n");
+          lexer->result_symbol = LINE_START;
+          return true;
+      }
   }
 
   // fprintf(stderr, "scanner invoked... next char %c\n", lexer->lookahead);
   // Detect a newline
   if (lexer->lookahead == '\n' && valid_symbols[LINE_END]) {
-    state->pos.col = lexer->get_column(lexer);
+    // state->pos.col = lexer->get_column(lexer);
       // fprintf(stderr, "possible line end: ");
       // debug_pos(&state->pos);
       // fprintf(stderr, "\n");
+    state->new_line_count++;
     state->pos.row++;
     state->pos.col = 0;
     lexer->advance(lexer, false);
@@ -2838,6 +3483,59 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       if (index < not_found) {
           // ParseResult *res = &state->results.contents[index];
           return false;
+      }
+  }
+
+  if (valid_symbols[INDENT]) {
+      size_t index = stack_find(&state->results, &wrapper.curr_pos, INDENT_TOKEN, false);
+      if (index < not_found) {
+            ParseResult res = state->results.contents[index];
+            lex_set_position(&wrapper, wrapper.pos + res.length);
+            lexer->mark_end(lexer);
+            lexer->result_symbol = INDENT;
+            array_erase(&state->results, index);
+            return true;
+      }
+  }
+
+  // Skip whitespace
+  // bool skipped_whitespace = false;
+  int32_t lookahead = lex_lookahead(&wrapper);
+  while (lookahead == ' ' || lookahead == '\t') {
+    // skipped_whitespace = true;
+    lex_advance(&wrapper, true);
+    lookahead = lex_lookahead(&wrapper);
+  }
+
+  if (valid_symbols[LIST_START]) {
+      size_t index = stack_find(&state->results, &wrapper.curr_pos, LIST_START_TOKEN, false);
+      if (index < not_found) {
+          lexer->mark_end(lexer);
+          lexer->result_symbol = LIST_START;
+          array_erase(&state->results, index);
+          return true;
+      }
+  }
+
+  if (valid_symbols[ORDERED] || valid_symbols[UNORDERED]) {
+      fprintf(stderr, "looking for some list item\n");
+      size_t index = stack_find_any(&state->results, &wrapper.curr_pos, false);
+      if (index < not_found) {
+            fprintf(stderr, "found a list item at index %zu\n", index);
+            ParseResult element = state->results.contents[index];
+            if (element.token == ORDERED_LIST_ITEM || element.token == UNORDERED_LIST_ITEM) {
+                print_stack(&state->results);
+                lex_set_position(&wrapper, wrapper.pos + element.length);
+                lexer->mark_end(lexer);
+                debug_pos(&wrapper.curr_pos);
+                if (element.token == ORDERED_LIST_ITEM) {
+                    lexer->result_symbol = ORDERED;
+                } else {
+                    lexer->result_symbol = UNORDERED;
+                }
+                array_erase(&state->results, index);
+                return true;
+            }
       }
   }
 
