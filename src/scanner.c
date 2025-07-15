@@ -3216,29 +3216,16 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
     }
 
 
-    if (had_indents) {
+    if (had_indents && is_list_item && state->new_line_count == 1) {
         // we had some level indents before this successful insert
-        // so we need to indicate the last list item has ended...
-        if (is_list_item && state->new_line_count == 1) {
-            // end list token
-            ParseResult paragraph_end = new_parse_result(
-                new_position(wrapper.curr_pos.row, 0),
-                new_position(wrapper.curr_pos.row, 0),
-                EMPTY_TOKEN, 0, true);
-            stack_insert(&state->results, paragraph_end);
-        }
-        // if ((state->new_line_count > 1 &&
-        //     (indent_size_after < array_back(&state->indents)->range.end))) {
-        //     u8Mid *last_indent = array_back(&state->indents);
-        //     fprintf(stderr,
-        //         " potential_dedent %i\n prior indent %i\n last indent size: [%i, %i]\n new_line_count %i\n",
-        //         potential_dedent, indent_size_after, last_indent->range.start,  last_indent->range.end, state->new_line_count);
-        //     ParseResult list_item_end = new_parse_result(
-        //         new_position(wrapper.curr_pos.row, 0),
-        //         new_position(wrapper.curr_pos.row, 0),
-        //         LIST_ITEM_END_TOKEN, 0, true);
-        //     stack_insert_(&state->results, list_item_end, 0, true);
-        // }
+        // so we need to indicate the content (likely a paragraph)
+        // is done so that the parser knows a new paragraph or other
+        // content choice is next. (in this case a list item)
+        ParseResult paragraph_end = new_parse_result(
+            new_position(wrapper.curr_pos.row, 0),
+            new_position(wrapper.curr_pos.row, 0),
+            EMPTY_TOKEN, 0, true);
+        stack_insert(&state->results, paragraph_end);
 
     }
 
