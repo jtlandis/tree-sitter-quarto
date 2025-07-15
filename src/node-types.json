@@ -61,6 +61,14 @@
       "required": true,
       "types": [
         {
+          "type": "indent",
+          "named": true
+        },
+        {
+          "type": "line_start",
+          "named": true
+        },
+        {
           "type": "list",
           "named": true
         },
@@ -178,7 +186,7 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": true,
       "types": [
         {
@@ -203,6 +211,10 @@
         },
         {
           "type": "heading_6",
+          "named": true
+        },
+        {
+          "type": "line_start",
           "named": true
         }
       ]
@@ -871,7 +883,15 @@
           "named": true
         },
         {
+          "type": "line_start",
+          "named": true
+        },
+        {
           "type": "list_item",
+          "named": true
+        },
+        {
+          "type": "list_start",
           "named": true
         }
       ]
@@ -887,6 +907,10 @@
       "types": [
         {
           "type": "content",
+          "named": true
+        },
+        {
+          "type": "list_item_end",
           "named": true
         },
         {
@@ -958,6 +982,10 @@
           "named": true
         },
         {
+          "type": "line_start",
+          "named": true
+        },
+        {
           "type": "literal",
           "named": true
         },
@@ -1012,6 +1040,10 @@
       "multiple": true,
       "required": true,
       "types": [
+        {
+          "type": "empty",
+          "named": true
+        },
         {
           "type": "line_end",
           "named": true
@@ -1662,11 +1694,23 @@
     "named": true
   },
   {
+    "type": "line_start",
+    "named": true
+  },
+  {
     "type": "link_end",
     "named": true
   },
   {
     "type": "link_start",
+    "named": true
+  },
+  {
+    "type": "list_item_end",
+    "named": true
+  },
+  {
+    "type": "list_start",
     "named": true
   },
   {
