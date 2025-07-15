@@ -1035,7 +1035,7 @@ static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
     ParseResult res = empty_parse_result();
     res.range.start = wrapper->curr_pos;
     if (lex_lookahead(wrapper) != '{') {
-        return res;
+        goto return_res;
     }
     lex_advance(wrapper, false);
     int32_t lookahead = lex_lookahead(wrapper);
@@ -1089,7 +1089,7 @@ static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
                         item.range.start = lex_current_position(wrapper);
                         item.token = VALUE_ATTR;
                         if (lookahead == ' ' || lookahead == '\t') {
-                            return res;
+                            goto return_res;
                         }
                         switch (lookahead) {
                             case '"': {
@@ -1121,7 +1121,7 @@ static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
                         item.length = wrapper->pos - buffer_item_pos;
                         // before we add, make sure next character is whitespace
                         if (!(lookahead == ' ' || lookahead == '\t' || lookahead == '}')) {
-                            return res;
+                            goto return_res;
                         }
                         lex_backtrack_n(wrapper, 1);
                         size_t index = stack_insert(stack, item_clone);
@@ -1131,7 +1131,7 @@ static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
                         break;
                     }
                     default: {
-                        return res;
+                        goto return_res;
                     }
                 }
                 break;
@@ -1140,7 +1140,7 @@ static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
                 if (!encountered_default) {
                     item.token = ID_ATTR;
                 } else {
-                    return res;
+                    goto return_res;
                 }
                 break;
             }
@@ -1180,26 +1180,26 @@ static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
             default: {
                 if (!encountered_default) {
                     if (lookahead >= '0' && lookahead <= '9') {
-                        return res;
+                        goto return_res;
                     }
                     switch (item.token) {
                         case NONE: {
                             if (!isalpha(lookahead) || lookahead == '_') {
                                 // key values cannot start with '_'
-                                return res;
+                                goto return_res;
                             }
                             break;
                         }
                         case CLASS_ATTR: {
                             if (!isalpha(lookahead) || lookahead == '-' || lookahead == '_') {
-                                return res;
+                                goto return_res;
                             }
                             break;
                         }
                         default: {}
                     }
                 } else if (!(isalnum(lookahead) || lookahead == '-' || lookahead == '_')) {
-                    return res;
+                    goto return_res;
                 }
                 if (item.token == NONE || item.token == EMPTY_TOKEN) {
                     item.token = KEY_ATTR;
