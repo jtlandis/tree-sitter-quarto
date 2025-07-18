@@ -61,6 +61,10 @@
       "required": true,
       "types": [
         {
+          "type": "div",
+          "named": true
+        },
+        {
           "type": "indent",
           "named": true
         },
@@ -74,6 +78,29 @@
         },
         {
           "type": "paragraph",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "curly_attrs",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "attrs",
+          "named": true
+        },
+        {
+          "type": "curly_end",
+          "named": true
+        },
+        {
+          "type": "curly_start",
           "named": true
         }
       ]
@@ -95,6 +122,53 @@
     }
   },
   {
+    "type": "div",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "attr_class",
+          "named": true
+        },
+        {
+          "type": "content",
+          "named": true
+        },
+        {
+          "type": "curly_attrs",
+          "named": true
+        },
+        {
+          "type": "div_end",
+          "named": true
+        },
+        {
+          "type": "div_start",
+          "named": true
+        },
+        {
+          "type": "indent",
+          "named": true
+        },
+        {
+          "type": "line_break",
+          "named": true
+        },
+        {
+          "type": "line_end",
+          "named": true
+        },
+        {
+          "type": "line_start",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "emph",
     "named": true,
     "fields": {},
@@ -103,15 +177,7 @@
       "required": true,
       "types": [
         {
-          "type": "attrs",
-          "named": true
-        },
-        {
-          "type": "curly_end",
-          "named": true
-        },
-        {
-          "type": "curly_start",
+          "type": "curly_attrs",
           "named": true
         },
         {
@@ -229,15 +295,7 @@
       "required": true,
       "types": [
         {
-          "type": "attrs",
-          "named": true
-        },
-        {
-          "type": "curly_end",
-          "named": true
-        },
-        {
-          "type": "curly_start",
+          "type": "curly_attrs",
           "named": true
         },
         {
@@ -312,15 +370,7 @@
       "required": true,
       "types": [
         {
-          "type": "attrs",
-          "named": true
-        },
-        {
-          "type": "curly_end",
-          "named": true
-        },
-        {
-          "type": "curly_start",
+          "type": "curly_attrs",
           "named": true
         },
         {
@@ -395,15 +445,7 @@
       "required": true,
       "types": [
         {
-          "type": "attrs",
-          "named": true
-        },
-        {
-          "type": "curly_end",
-          "named": true
-        },
-        {
-          "type": "curly_start",
+          "type": "curly_attrs",
           "named": true
         },
         {
@@ -478,15 +520,7 @@
       "required": true,
       "types": [
         {
-          "type": "attrs",
-          "named": true
-        },
-        {
-          "type": "curly_end",
-          "named": true
-        },
-        {
-          "type": "curly_start",
+          "type": "curly_attrs",
           "named": true
         },
         {
@@ -561,15 +595,7 @@
       "required": true,
       "types": [
         {
-          "type": "attrs",
-          "named": true
-        },
-        {
-          "type": "curly_end",
-          "named": true
-        },
-        {
-          "type": "curly_start",
+          "type": "curly_attrs",
           "named": true
         },
         {
@@ -644,15 +670,7 @@
       "required": true,
       "types": [
         {
-          "type": "attrs",
-          "named": true
-        },
-        {
-          "type": "curly_end",
-          "named": true
-        },
-        {
-          "type": "curly_start",
+          "type": "curly_attrs",
           "named": true
         },
         {
@@ -727,10 +745,6 @@
       "required": true,
       "types": [
         {
-          "type": "attrs",
-          "named": true
-        },
-        {
           "type": "bracket_end",
           "named": true
         },
@@ -739,11 +753,7 @@
           "named": true
         },
         {
-          "type": "curly_end",
-          "named": true
-        },
-        {
-          "type": "curly_start",
+          "type": "curly_attrs",
           "named": true
         },
         {
@@ -942,15 +952,7 @@
       "required": true,
       "types": [
         {
-          "type": "attrs",
-          "named": true
-        },
-        {
-          "type": "curly_end",
-          "named": true
-        },
-        {
-          "type": "curly_start",
+          "type": "curly_attrs",
           "named": true
         },
         {
@@ -1142,10 +1144,6 @@
       "required": true,
       "types": [
         {
-          "type": "attrs",
-          "named": true
-        },
-        {
           "type": "bracket_end",
           "named": true
         },
@@ -1154,11 +1152,7 @@
           "named": true
         },
         {
-          "type": "curly_end",
-          "named": true
-        },
-        {
-          "type": "curly_start",
+          "type": "curly_attrs",
           "named": true
         },
         {
@@ -1233,15 +1227,7 @@
       "required": true,
       "types": [
         {
-          "type": "attrs",
-          "named": true
-        },
-        {
-          "type": "curly_end",
-          "named": true
-        },
-        {
-          "type": "curly_start",
+          "type": "curly_attrs",
           "named": true
         },
         {
@@ -1320,15 +1306,7 @@
       "required": true,
       "types": [
         {
-          "type": "attrs",
-          "named": true
-        },
-        {
-          "type": "curly_end",
-          "named": true
-        },
-        {
-          "type": "curly_start",
+          "type": "curly_attrs",
           "named": true
         },
         {
@@ -1407,15 +1385,7 @@
       "required": true,
       "types": [
         {
-          "type": "attrs",
-          "named": true
-        },
-        {
-          "type": "curly_end",
-          "named": true
-        },
-        {
-          "type": "curly_start",
+          "type": "curly_attrs",
           "named": true
         },
         {
@@ -1494,15 +1464,7 @@
       "required": true,
       "types": [
         {
-          "type": "attrs",
-          "named": true
-        },
-        {
-          "type": "curly_end",
-          "named": true
-        },
-        {
-          "type": "curly_start",
+          "type": "curly_attrs",
           "named": true
         },
         {
@@ -1663,6 +1625,14 @@
   },
   {
     "type": "dedent",
+    "named": true
+  },
+  {
+    "type": "div_end",
+    "named": true
+  },
+  {
+    "type": "div_start",
     "named": true
   },
   {

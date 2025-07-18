@@ -48,6 +48,8 @@ enum TokenType {
   UNORDERED,
   LIST_START,
   LIST_ITEM_END,
+  DIV_START,
+  DIV_END,
   NO_PARSE,
   ERROR, //General Emphasis
 };
@@ -159,6 +161,12 @@ static void print_valid_symbols(const bool *symbols) {
     if (symbols[LIST_ITEM_END]) {
      fprintf(stderr, "LIST_ITEM_END ");
     }
+    if (symbols[DIV_START]) {
+     fprintf(stderr, "DIV_START ");
+    }
+    if (symbols[DIV_END]) {
+     fprintf(stderr, "DIV_END ");
+    }
     if (symbols[NO_PARSE]) {
      fprintf(stderr, "NO_PARSE ");
     }
@@ -199,6 +207,8 @@ enum ParseToken {
     DEDENT_TOKEN,
     LIST_START_TOKEN,
     LIST_ITEM_END_TOKEN,
+    DIV_START_TOKEN,
+    DIV_END_TOKEN
 };
 
 
@@ -1030,6 +1040,12 @@ static ParseResult parse_parenthesis(LexWrap *wrapper, ParseResultArray *stack) 
     }
 }
 
+/// parses a curly attribute, e.g. {#id .class key="value"}
+/// if the first item is not '{', it will return an empty ParseResult
+/// and the lexer will be at the same position.
+/// otherwise the ParseResult will be a successful and the lexer will be at the
+/// end of the successful parse, or if the parse failed, it will be at the end
+/// of the first '{' token.
 static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
     uint32_t buffer_start_pos = wrapper->pos;
     ParseResult res = empty_parse_result();
@@ -1230,6 +1246,7 @@ static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
             start.range.end.col ++;
             start.success = true;
             start.length = 1;
+            lex_set_position(wrapper, buffer_start_pos + 1);
             stack_insert(stack, start);
         }
         // fprintf(stderr, "parser is at position: ");
@@ -3128,7 +3145,7 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
             if (indent_ele->range.end >= indent_size) {
                 break;
             }
-            fprintf(stderr, "indent_level < indent_size (%i < %i) -- creating a indent token\n", indent_ele->range.end, indent_size);
+            // fprintf(stderr, "indent_level < indent_size (%i < %i) -- creating a indent token\n", indent_ele->range.end, indent_size);
             ParseResult indent = new_parse_result(
                 new_position(row, col),
                 new_position(row, col + indent_ele->range.end),
@@ -3145,9 +3162,9 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
                 || (!is_list_item && indent_size >= indent_ele->range.end)) {
                 break;
             }
-            fprintf(stderr,
-                "indent_size < indent level.start (%i < %i) --  creating a dedent token\n",
-                indent_size, indent_ele->range.start);
+            // fprintf(stderr,
+            //     "indent_size < indent level.start (%i < %i) --  creating a dedent token\n",
+            //     indent_size, indent_ele->range.start);
             // but do not insert dedent tokens yet...
             potential_dedent++;
 
@@ -3161,21 +3178,14 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
         array_pop(&state->indents);
     }
 
-    uint8_t indent_size_before = indent_size;
-    // uint8_t indent_size_after = indent_size;
+
     if (is_list_item) {
         // indent_size should always be greater than or equal to the last element of the indents array
         // uint32_t start = wrapper.pos;
         is_list_item = parse_list_item(&wrapper, state).success;
-        fprintf(stderr, "Parse list item: %s\n", is_list_item ? "success" : "failed");
-        if (is_list_item) {
-            // u8Mid *last_indent = array_back(&state->indents);
-            // indent_size_after += last_indent->range.end - last_indent->range.start;
-            indent_size = 0;
-        }
     }
 
-    fprintf(stderr, "state->indents.size (%i) -- n_indents_before (%i)\n",state->indents.size, n_indents_before);
+    // fprintf(stderr, "state->indents.size (%i) -- n_indents_before (%i)\n",state->indents.size, n_indents_before);
     if (state->indents.size <= n_indents_before) {
         if (n_indents_before > 1) {
             ParseResult dedent = new_parse_result(
@@ -3200,17 +3210,13 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
                     stack_insert_(&state->results, list_item_end, index, true);
                 }
             }
-
-
-            fprintf(stderr, "printing debug stack:\n");
-            print_stack(&state->results);
         }
 
     } else {
-        fprintf(stderr, "inserting list start\n");
+        // fprintf(stderr, "inserting list start\n");
         ParseResult list_start = new_parse_result(
-            new_position(wrapper.curr_pos.row, indent_size_before),
-            new_position(wrapper.curr_pos.row, indent_size_before),
+            new_position(wrapper.curr_pos.row, indent_size),
+            new_position(wrapper.curr_pos.row, indent_size),
             LIST_START_TOKEN, 0, true);
         stack_insert(&state->results, list_start);
     }
@@ -3230,9 +3236,10 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
     }
 
 
-    state->new_line_count = 0; // reset the new line count
 
-
+    // reset indent size.
+    indent_size = wrapper.curr_pos.col - array_back(&state->indents)->range.end;
+    fprintf(stderr, "before finish parsing line - new indent size after indents is %i\n", indent_size);
     // decide what to do with the first symbol
     // mostely for items that could expand into other syntatic elements
     // i.e.
@@ -3262,7 +3269,97 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
         }
         case ':': {
             // could be block content like a div
-            assert(1 > 2);
+            // note that indent_size MUST be 0 here...
+            // this should be zero if we successfully parsed
+            if (indent_size != 0) {
+                // this just becomes something we parse past...
+                break;
+            }
+            Pos div_start = wrapper.curr_pos;
+            uint8_t colon_count = 0;
+            while (lookahead == ':') {
+                lex_advance(&wrapper, false);
+                colon_count++;
+                lookahead = lex_lookahead(&wrapper);
+            }
+            if (colon_count < 3) {
+                // need at least 3 colons to be a div
+                break;
+            }
+            Pos div_end = wrapper.curr_pos;
+            // we have a div
+            //determine if this is a start token.
+            // start tokens will either have a single string of text (no spaces)
+            // or attr_curly braces.
+            //
+            // end tokens should have only whitespace following the colons.
+
+            // move across whitespace
+            while (lookahead == ' ' || lookahead == '\t') {
+                lex_advance(&wrapper, false);
+                lookahead = lex_lookahead(&wrapper);
+            }
+            if (lookahead == '\n' || lookahead == '\0') {
+                // this is a div end token
+                ParseResult paragraph_end = new_parse_result(
+                    new_position(wrapper.curr_pos.row, 0),
+                    new_position(wrapper.curr_pos.row, 0),
+                    EMPTY_TOKEN, 0, true);
+                stack_insert(&state->results, paragraph_end);
+                ParseResult div_end_ = new_parse_result(
+                    div_start,
+                    div_end,
+                    DIV_END_TOKEN, colon_count, true);
+                stack_insert(&state->results, div_end_);
+                goto exit_func;
+            } else {
+                // end of whitespace and not a new line...
+                uint32_t lex_pos = wrapper.pos;
+                bool is_curly = false;
+                if (lookahead == '{') {
+                    // In the below function, the wrapper will be either at the
+                    // end of the successful parse, or where
+                    is_curly = parse_curly_attr(&wrapper, &state->results).success;
+                    if (!is_curly) {
+                        // if we didn't parse a curly attr, we should
+                        // reset the position to where we were before
+                        // the parse.
+                        lex_set_position(&wrapper, lex_pos);
+                    }
+                }
+                // if the above failed to parse, we may make this a legit class_attr
+                if (!is_curly) {
+                    Pos start = wrapper.curr_pos;
+                    // move across the text
+                    while(!(lookahead == ' ' ||  lookahead == '\t' || lookahead == '\n')) {
+                        lex_advance(&wrapper, false);
+                        lookahead = lex_lookahead(&wrapper);
+                    }
+                    Pos end = wrapper.curr_pos;
+                    // skip over whitespace again.
+                    while (lookahead == ' ' || lookahead == '\t') {
+                        lex_advance(&wrapper, false);
+                        lookahead = lex_lookahead(&wrapper);
+                    }
+                    if (lookahead == '\n' || lookahead == '\0') {
+                        // this is a div end token
+                        ParseResult div_end = new_parse_result(
+                            start,
+                            end,
+                            CLASS_ATTR, end.col - start.col, true);
+                        stack_insert(&state->results, div_end);
+                    } else {
+                        break;
+                    }
+                }
+                ParseResult div_start_ = new_parse_result(
+                    div_start,
+                    div_end,
+                    DIV_START_TOKEN, colon_count, true);
+                stack_insert(&state->results, div_start_);
+                goto exit_func;
+            }
+
             break;
         }
         case '`': {
@@ -3335,6 +3432,7 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
     }
 
     exit_func: {
+        state->new_line_count = 0; // reset the new line count
         return;
     }
 
@@ -3386,7 +3484,9 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
           }
       }
       if (valid_symbols[LIST_ITEM_END] || valid_symbols[DEDENT]) {
-          size_t index = stack_find_any(&state->results, &pos, false);
+          // these tokens are usually size 0, so matching end would likely be
+          // more safe!
+          size_t index = stack_find_any(&state->results, &pos, true);
           if (index < not_found) {
               fprintf(stderr, "found either LIST_ITEM_END or DEDENT\n");
               ParseResult *res = array_get(&state->results, index);
@@ -3429,7 +3529,7 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
   // Detect a newline
   if (lexer->lookahead == '\n' && valid_symbols[LINE_END]) {
     // state->pos.col = lexer->get_column(lexer);
-      // fprintf(stderr, "possible line end: ");
+      fprintf(stderr, "returning LINE_END\n");
       // debug_pos(&state->pos);
       // fprintf(stderr, "\n");
     state->new_line_count++;
@@ -3568,6 +3668,34 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
 
       }
   }
+
+  if (lexer->lookahead == ':' && (valid_symbols[DIV_START] || valid_symbols[DIV_END])) {
+      if (valid_symbols[DIV_START]) {
+          size_t index = stack_find(&state->results, &wrapper.curr_pos, DIV_START_TOKEN, false);
+          if (index < not_found) {
+                ParseResult element = state->results.contents[index];
+                lex_set_position(&wrapper, wrapper.pos + element.length);
+                lexer->mark_end(lexer);
+                lexer->result_symbol = DIV_START;
+                array_erase(&state->results, index);
+                return true;
+          }
+      }
+
+      if (valid_symbols[DIV_END]) {
+          size_t index = stack_find(&state->results, &wrapper.curr_pos, DIV_END_TOKEN, false);
+          if (index < not_found) {
+                ParseResult element = state->results.contents[index];
+                lex_set_position(&wrapper, wrapper.pos + element.length);
+                lexer->mark_end(lexer);
+                lexer->result_symbol = DIV_END;
+                array_erase(&state->results, index);
+                return true;
+          }
+      }
+
+  }
+
   // detect  star
   if (lexer->lookahead == '*' && (
       valid_symbols[EMPHASIS_STAR_START] ||
@@ -3634,6 +3762,8 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
           }
       }
 
+      // should we even do this????????
+      // REMOVE THE BELOW BLOCK LATER!!
       // failed to match any pre-parsed info on the stack.
       // Its not the time to advance the lexer if STRONG match is possible.
       if (valid_symbols[EMPHASIS_STAR_START] || valid_symbols[STRONG_STAR_START]) {

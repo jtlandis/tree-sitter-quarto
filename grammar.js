@@ -52,6 +52,8 @@ module.exports = grammar({
     $.unordered,
     $.list_start,
     $.list_item_end,
+    $.div_start,
+    $.div_end,
     $._no_parse,
     $._unused_error,
   ],
@@ -98,7 +100,7 @@ module.exports = grammar({
           $.span,
           $.inline_math,
           $.display_math,
-          seq($.verbatim, optional(seq($.curly_start, $.attrs, $.curly_end))),
+          seq($.verbatim, optional($.curly_attrs)),
           alias($._no_parse, $.literal),
         ),
       ), //, $.whitespace)), //prec(1, repeat1(choice($.word, $.whitespace))),
@@ -134,7 +136,7 @@ module.exports = grammar({
     literal: ($) => prec(10, /\\[@#\$%\^\&\*\(\)_\+\=\-/><~\\ ]/),
     // content: ($) => repeat1($.paragraph),
     _block_content: ($) =>
-      choice($.paragraph, seq(optional($._new_line_start), $.list)),
+      choice($.paragraph, seq(optional($._new_line_start), $.list), $.div),
     content: ($) => prec.right(repeat1($._block_content)),
     _section: ($) => choice($.heading, $.content),
     heading: ($) =>
@@ -203,7 +205,7 @@ module.exports = grammar({
         $.link_start,
         $.link,
         $.link_end,
-        optional(seq($.curly_start, $.attrs, $.curly_end)),
+        optional($.curly_attrs),
       ),
     link: ($) => choice($.empty, /[^)]+/),
     span: ($) =>
@@ -211,10 +213,9 @@ module.exports = grammar({
         $.bracket_start,
         repeat(prec.left(seq($._line_content, repeat($.line_end)))),
         $.bracket_end,
-        $.curly_start,
-        $.attrs,
-        $.curly_end,
+        $.curly_attrs,
       ),
+    curly_attrs: ($) => seq($.curly_start, $.attrs, $.curly_end),
     attrs: ($) =>
       repeat1(choice($.empty, $.attr_id, $.attr_class, $.attr_keyvalue)),
     // attr_id: ($) => seq("#", $.attr_id),
@@ -241,6 +242,19 @@ module.exports = grammar({
           $.list_item,
           repeat(seq($._new_line_start, $.list_item)),
           optional($.dedent),
+        ),
+      ),
+
+    div: ($) =>
+      prec.right(
+        seq(
+          optional($._new_line_start),
+          $.div_start,
+          choice($.curly_attrs, $.attr_class),
+          repeat($._new_line_end),
+          $._new_line_end,
+          $.content,
+          optional(seq($._new_line_start, $.div_end, $._new_line_end)),
         ),
       ),
   },

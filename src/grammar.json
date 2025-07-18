@@ -232,21 +232,8 @@
                 "type": "CHOICE",
                 "members": [
                   {
-                    "type": "SEQ",
-                    "members": [
-                      {
-                        "type": "SYMBOL",
-                        "name": "curly_start"
-                      },
-                      {
-                        "type": "SYMBOL",
-                        "name": "attrs"
-                      },
-                      {
-                        "type": "SYMBOL",
-                        "name": "curly_end"
-                      }
-                    ]
+                    "type": "SYMBOL",
+                    "name": "curly_attrs"
                   },
                   {
                     "type": "BLANK"
@@ -519,6 +506,10 @@
               "name": "list"
             }
           ]
+        },
+        {
+          "type": "SYMBOL",
+          "name": "div"
         }
       ]
     },
@@ -983,21 +974,8 @@
           "type": "CHOICE",
           "members": [
             {
-              "type": "SEQ",
-              "members": [
-                {
-                  "type": "SYMBOL",
-                  "name": "curly_start"
-                },
-                {
-                  "type": "SYMBOL",
-                  "name": "attrs"
-                },
-                {
-                  "type": "SYMBOL",
-                  "name": "curly_end"
-                }
-              ]
+              "type": "SYMBOL",
+              "name": "curly_attrs"
             },
             {
               "type": "BLANK"
@@ -1053,6 +1031,15 @@
           "type": "SYMBOL",
           "name": "bracket_end"
         },
+        {
+          "type": "SYMBOL",
+          "name": "curly_attrs"
+        }
+      ]
+    },
+    "curly_attrs": {
+      "type": "SEQ",
+      "members": [
         {
           "type": "SYMBOL",
           "name": "curly_start"
@@ -1199,6 +1186,84 @@
               {
                 "type": "SYMBOL",
                 "name": "dedent"
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "div": {
+      "type": "PREC_RIGHT",
+      "value": 0,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "_new_line_start"
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          },
+          {
+            "type": "SYMBOL",
+            "name": "div_start"
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "curly_attrs"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "attr_class"
+              }
+            ]
+          },
+          {
+            "type": "REPEAT",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_new_line_end"
+            }
+          },
+          {
+            "type": "SYMBOL",
+            "name": "_new_line_end"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "content"
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "SYMBOL",
+                    "name": "_new_line_start"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "div_end"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "_new_line_end"
+                  }
+                ]
               },
               {
                 "type": "BLANK"
@@ -1361,6 +1426,14 @@
     {
       "type": "SYMBOL",
       "name": "list_item_end"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "div_start"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "div_end"
     },
     {
       "type": "SYMBOL",
