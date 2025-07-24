@@ -510,6 +510,10 @@
         {
           "type": "SYMBOL",
           "name": "div"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_code_block"
         }
       ]
     },
@@ -1078,6 +1082,23 @@
         ]
       }
     },
+    "attr_class": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "."
+        },
+        {
+          "type": "FIELD",
+          "name": "class",
+          "content": {
+            "type": "SYMBOL",
+            "name": "attr_class_name"
+          }
+        }
+      ]
+    },
     "attr_keyvalue": {
       "type": "SEQ",
       "members": [
@@ -1226,7 +1247,7 @@
               },
               {
                 "type": "SYMBOL",
-                "name": "attr_class"
+                "name": "attr_class_name"
               }
             ]
           },
@@ -1272,6 +1293,207 @@
           }
         ]
       }
+    },
+    "exec_code_block": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "_new_line_start"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "SYMBOL",
+          "name": "code_chunk_start"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "curly_start"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "attr_class_name"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "code_chunk_name"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "STRING",
+              "value": ","
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "attr_keyvalue"
+              },
+              {
+                "type": "REPEAT",
+                "content": {
+                  "type": "SEQ",
+                  "members": [
+                    {
+                      "type": "STRING",
+                      "value": ","
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "attr_keyvalue"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "SYMBOL",
+          "name": "curly_end"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "code_chunk_options_start"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "_line_content"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "code_chunk_options_end"
+                }
+              ]
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "SYMBOL",
+          "name": "code_chunk_content"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "code_chunk_end"
+        }
+      ]
+    },
+    "code_block": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "_new_line_start"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "SYMBOL",
+          "name": "code_chunk_start"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "STRING",
+                      "value": "."
+                    },
+                    {
+                      "type": "BLANK"
+                    }
+                  ]
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "attr_class_name"
+                }
+              ]
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "curly_attrs"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "SYMBOL",
+          "name": "code_chunk_content"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "code_chunk_end"
+        }
+      ]
+    },
+    "_code_block": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "exec_code_block"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "code_block"
+        }
+      ]
     }
   },
   "extras": [
@@ -1393,7 +1615,7 @@
     },
     {
       "type": "SYMBOL",
-      "name": "attr_class"
+      "name": "attr_class_name"
     },
     {
       "type": "SYMBOL",
@@ -1434,6 +1656,30 @@
     {
       "type": "SYMBOL",
       "name": "div_end"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "code_chunk_start"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "code_chunk_end"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "code_chunk_name"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "code_chunk_options_start"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "code_chunk_options_end"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "code_chunk_content"
     },
     {
       "type": "SYMBOL",

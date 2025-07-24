@@ -1,5 +1,21 @@
 [
   {
+    "type": "attr_class",
+    "named": true,
+    "fields": {
+      "class": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "attr_class_name",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "attr_keyvalue",
     "named": true,
     "fields": {
@@ -53,6 +69,50 @@
     }
   },
   {
+    "type": "code_block",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "attr_class_name",
+          "named": true
+        },
+        {
+          "type": "code_chunk_content",
+          "named": true
+        },
+        {
+          "type": "code_chunk_end",
+          "named": true
+        },
+        {
+          "type": "code_chunk_start",
+          "named": true
+        },
+        {
+          "type": "curly_attrs",
+          "named": true
+        },
+        {
+          "type": "indent",
+          "named": true
+        },
+        {
+          "type": "line_start",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "comma",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "content",
     "named": true,
     "fields": {},
@@ -61,7 +121,15 @@
       "required": true,
       "types": [
         {
+          "type": "code_block",
+          "named": true
+        },
+        {
           "type": "div",
+          "named": true
+        },
+        {
+          "type": "exec_code_block",
           "named": true
         },
         {
@@ -130,7 +198,7 @@
       "required": true,
       "types": [
         {
-          "type": "attr_class",
+          "type": "attr_class_name",
           "named": true
         },
         {
@@ -202,6 +270,125 @@
         },
         {
           "type": "inline_math",
+          "named": true
+        },
+        {
+          "type": "literal",
+          "named": true
+        },
+        {
+          "type": "puncuation",
+          "named": true
+        },
+        {
+          "type": "span",
+          "named": true
+        },
+        {
+          "type": "striketrhough",
+          "named": true
+        },
+        {
+          "type": "strong",
+          "named": true
+        },
+        {
+          "type": "subscript",
+          "named": true
+        },
+        {
+          "type": "superscript",
+          "named": true
+        },
+        {
+          "type": "symbols",
+          "named": true
+        },
+        {
+          "type": "verbatim",
+          "named": true
+        },
+        {
+          "type": "word",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "exec_code_block",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "attr_class_name",
+          "named": true
+        },
+        {
+          "type": "attr_keyvalue",
+          "named": true
+        },
+        {
+          "type": "code_chunk_content",
+          "named": true
+        },
+        {
+          "type": "code_chunk_end",
+          "named": true
+        },
+        {
+          "type": "code_chunk_name",
+          "named": true
+        },
+        {
+          "type": "code_chunk_options_end",
+          "named": true
+        },
+        {
+          "type": "code_chunk_options_start",
+          "named": true
+        },
+        {
+          "type": "code_chunk_start",
+          "named": true
+        },
+        {
+          "type": "curly_attrs",
+          "named": true
+        },
+        {
+          "type": "curly_end",
+          "named": true
+        },
+        {
+          "type": "curly_start",
+          "named": true
+        },
+        {
+          "type": "display_math",
+          "named": true
+        },
+        {
+          "type": "emph",
+          "named": true
+        },
+        {
+          "type": "hyperlink",
+          "named": true
+        },
+        {
+          "type": "indent",
+          "named": true
+        },
+        {
+          "type": "inline_math",
+          "named": true
+        },
+        {
+          "type": "line_start",
           "named": true
         },
         {
@@ -1054,6 +1241,11 @@
     }
   },
   {
+    "type": "period",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "puncuation",
     "named": true,
     "fields": {},
@@ -1571,6 +1763,14 @@
     "named": false
   },
   {
+    "type": ",",
+    "named": false
+  },
+  {
+    "type": ".",
+    "named": false
+  },
+  {
     "type": "=",
     "named": false
   },
@@ -1579,7 +1779,7 @@
     "named": false
   },
   {
-    "type": "attr_class",
+    "type": "attr_class_name",
     "named": true
   },
   {
@@ -1603,11 +1803,31 @@
     "named": true
   },
   {
-    "type": "colon",
+    "type": "code_chunk_content",
     "named": true
   },
   {
-    "type": "comma",
+    "type": "code_chunk_end",
+    "named": true
+  },
+  {
+    "type": "code_chunk_name",
+    "named": true
+  },
+  {
+    "type": "code_chunk_options_end",
+    "named": true
+  },
+  {
+    "type": "code_chunk_options_start",
+    "named": true
+  },
+  {
+    "type": "code_chunk_start",
+    "named": true
+  },
+  {
+    "type": "colon",
     "named": true
   },
   {
@@ -1689,10 +1909,6 @@
   },
   {
     "type": "ordered",
-    "named": true
-  },
-  {
-    "type": "period",
     "named": true
   },
   {

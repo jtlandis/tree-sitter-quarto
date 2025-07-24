@@ -43,7 +43,7 @@ module.exports = grammar({
     $.curly_start,
     $.curly_end,
     $.attr_id,
-    $.attr_class,
+    $.attr_class_name,
     $.attr_key,
     $.attr_value,
     $.verbatim,
@@ -54,6 +54,12 @@ module.exports = grammar({
     $.list_item_end,
     $.div_start,
     $.div_end,
+    $.code_chunk_start,
+    $.code_chunk_end,
+    $.code_chunk_name,
+    $.code_chunk_options_start,
+    $.code_chunk_options_end,
+    $.code_chunk_content,
     $._no_parse,
     $._unused_error,
   ],
@@ -136,7 +142,12 @@ module.exports = grammar({
     literal: ($) => prec(10, /\\[@#\$%\^\&\*\(\)_\+\=\-/><~\\ ]/),
     // content: ($) => repeat1($.paragraph),
     _block_content: ($) =>
-      choice($.paragraph, seq(optional($._new_line_start), $.list), $.div),
+      choice(
+        $.paragraph,
+        seq(optional($._new_line_start), $.list),
+        $.div,
+        $._code_block,
+      ),
     content: ($) => prec.right(repeat1($._block_content)),
     _section: ($) => choice($.heading, $.content),
     heading: ($) =>
@@ -218,8 +229,7 @@ module.exports = grammar({
     curly_attrs: ($) => seq($.curly_start, $.attrs, $.curly_end),
     attrs: ($) =>
       repeat1(choice($.empty, $.attr_id, $.attr_class, $.attr_keyvalue)),
-    // attr_id: ($) => seq("#", $.attr_id),
-    // attr_class_: ($) => seq($.period, $.attr_class),
+    attr_class: ($) => seq(".", field("class", $.attr_class_name)),
     attr_keyvalue: ($) =>
       seq(field("key", $.attr_key), "=", field("value", $.attr_value)),
 
@@ -250,13 +260,43 @@ module.exports = grammar({
         seq(
           optional($._new_line_start),
           $.div_start,
-          choice($.curly_attrs, $.attr_class),
+          choice($.curly_attrs, $.attr_class_name),
           repeat($._new_line_end),
           $._new_line_end,
           $.content,
           optional(seq($._new_line_start, $.div_end, $._new_line_end)),
         ),
       ),
+    exec_code_block: ($) =>
+      seq(
+        optional($._new_line_start),
+        $.code_chunk_start,
+        $.curly_start,
+        $.attr_class_name,
+        optional($.code_chunk_name),
+        optional(","),
+        repeat(seq($.attr_keyvalue, repeat(seq(",", $.attr_keyvalue)))),
+        $.curly_end,
+        optional(
+          seq(
+            $.code_chunk_options_start,
+            $._line_content,
+            $.code_chunk_options_end,
+          ),
+        ),
+        $.code_chunk_content,
+        $.code_chunk_end,
+      ),
+    code_block: ($) =>
+      seq(
+        optional($._new_line_start),
+        $.code_chunk_start,
+        optional(seq(optional("."), $.attr_class_name)),
+        optional($.curly_attrs),
+        $.code_chunk_content,
+        $.code_chunk_end,
+      ),
+    _code_block: ($) => choice($.exec_code_block, $.code_block),
   },
 
   conflicts: ($) => [
