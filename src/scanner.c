@@ -2008,7 +2008,7 @@ static ParseResult parse_backtick(LexWrap *wrapper, ParseResultArray *stack) {
 //
 static ParseResult parse_backtick_block(LexWrap *wrapper,
     ParseResultArray *stack, u8MidArray *indents, int32_t char_) {
-    uint32_t buffer_start_pos = wrapper->pos;
+    uint32_t buffer_block_start_pos = wrapper->pos;
     ParseResult start = new_parse_result(wrapper->curr_pos, wrapper->curr_pos, NONE, 0, false);
     // if we are successful, we may need to indidcate the paragraph end.
     ParseResult paragraph_end = new_parse_result(
@@ -2019,6 +2019,9 @@ static ParseResult parse_backtick_block(LexWrap *wrapper,
     if (lookahead != char_) {
         return start;
     }
+    ParseResult block_content = new_parse_result(wrapper->curr_pos, wrapper->curr_pos,
+        NONE, 0, false);
+    bool start_inserted = false;
     uint8_t count = 0;
     uint8_t cur_indent = 0;
     uint8_t indent_match = array_back(indents)->range.end;
@@ -2042,6 +2045,9 @@ static ParseResult parse_backtick_block(LexWrap *wrapper,
     // if meant to be evaled
     bool is_eval_block = true;
     lex_walk_whitespace(wrapper, &lookahead);
+    if (lookahead == '\n') {
+        goto return_res;
+    }
     if (lookahead != '{' || char_ != '`') {
         is_eval_block = false;
     }
@@ -2078,6 +2084,7 @@ static ParseResult parse_backtick_block(LexWrap *wrapper,
             lex_walk_whitespace(wrapper, &lookahead);
             if (lookahead != '\n') {
                 // unexpected character,
+
                 goto return_res;
             } else {
                 lex_advance(wrapper, false);
@@ -2181,10 +2188,11 @@ static ParseResult parse_backtick_block(LexWrap *wrapper,
     start.success = true;
     start.token = BACKQUOTE_BLOCK_START_TOKEN;
     stack_insert(stack, start);
+    start_inserted = true;
     uint32_t block_start_pos = wrapper->pos;
     uint32_t block_end_pos = wrapper->pos;
-    ParseResult block_content = new_parse_result(wrapper->curr_pos, wrapper->curr_pos,
-        NONE, 0, false);
+    block_content.range.start = wrapper->curr_pos;
+    block_content.range.end = wrapper->curr_pos;
     while(lookahead != '\0') {
         // fprintf(stderr, "char `%c`\n", lookahead);
         switch (lookahead) {
@@ -2276,6 +2284,9 @@ static ParseResult parse_backtick_block(LexWrap *wrapper,
                 stack_insert_(stack, end, index, false);
             }
 
+        } else if (!start_inserted) {
+            lex_set_position(wrapper, buffer_block_start_pos);
+            dont_parse_next_n(wrapper, stack, count_match);
         }
         // fprintf(stderr, "returning from backtick_block\n");
         return block_content;
@@ -4186,11 +4197,11 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
   // print_scanner_state(state);
   state->pos.col = lexer->get_column(lexer);
   LexWrap wrapper = new_lexer(lexer, state->pos);
-  // debug_pos(&state->pos);
+  debug_pos(&state->pos);
   // fprintf(stderr, "  scanner invoked before: '%c' - is alpha: %i\n",
   //     lexer->lookahead == '\n' ? 'n' : lexer->lookahead, isalnum_((int)lexer->lookahead));
   // print_valid_symbols(valid_symbols);
-  // print_stack(&state->results);
+  print_stack(&state->results);
   // fprintf(stderr, "---\n");
   bool result = false;
   enum TokenType last_token = ERROR;
