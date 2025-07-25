@@ -110,144 +110,144 @@ static char* debug_token_type(enum TokenType token) {
 }
 
 static void print_valid_symbols(const bool *symbols) {
-    fprintf(stderr, "Valid symbols: ");
+    // fprintf(stderr, "Valid symbols: ");
     if (symbols[EMPTY]) {
-        fprintf(stderr, "EMPTY ");
+        // fprintf(stderr, "EMPTY ");
     }
     if (symbols[LINE_START]) {
-     fprintf(stderr, "LINE_START ");
+     // fprintf(stderr, "LINE_START ");
     }
     if (symbols[LINE_END]) {
-     fprintf(stderr, "LINE_END ");
+     // fprintf(stderr, "LINE_END ");
     }
     if (symbols[INDENT]) {
-     fprintf(stderr, "INDENT ");
+     // fprintf(stderr, "INDENT ");
     }
     if (symbols[DEDENT]) {
-     fprintf(stderr, "DEDENT ");
+     // fprintf(stderr, "DEDENT ");
     }
     if (symbols[EMPHASIS_STAR_START]) {
-     fprintf(stderr, "EMPHASIS_STAR_START ");
+     // fprintf(stderr, "EMPHASIS_STAR_START ");
     }
     if (symbols[EMPHASIS_STAR_END]) {
-     fprintf(stderr, "EMPHASIS_STAR_END ");
+     // fprintf(stderr, "EMPHASIS_STAR_END ");
     }
     if (symbols[EMPHASIS_UNDER_START]) {
-     fprintf(stderr, "EMPHASIS_UNDER_START ");
+     // fprintf(stderr, "EMPHASIS_UNDER_START ");
     }
     if (symbols[EMPHASIS_UNDER_END]) {
-     fprintf(stderr, "EMPHASIS_UNDER_END ");
+     // fprintf(stderr, "EMPHASIS_UNDER_END ");
     }
     if (symbols[STRONG_STAR_START]) {
-     fprintf(stderr, "STRONG_STAR_START ");
+     // fprintf(stderr, "STRONG_STAR_START ");
     }
     if (symbols[STRONG_STAR_END]) {
-     fprintf(stderr, "STRONG_STAR_END ");
+     // fprintf(stderr, "STRONG_STAR_END ");
     }
     if (symbols[STRONG_UNDER_START]) {
-     fprintf(stderr, "STRONG_UNDER_START ");
+     // fprintf(stderr, "STRONG_UNDER_START ");
     }
     if (symbols[STRONG_UNDER_END]) {
-     fprintf(stderr, "STRONG_UNDER_END ");
+     // fprintf(stderr, "STRONG_UNDER_END ");
     }
     if (symbols[SUPERSCRIPT_START]) {
-     fprintf(stderr, "SUPERSCRIPT_START ");
+     // fprintf(stderr, "SUPERSCRIPT_START ");
     }
     if (symbols[SUPERSCRIPT_END]) {
-     fprintf(stderr, "SUPERSCRIPT_END ");
+     // fprintf(stderr, "SUPERSCRIPT_END ");
     }
     if (symbols[SUBSCRIPT_START]) {
-     fprintf(stderr, "SUBSCRIPT_START ");
+     // fprintf(stderr, "SUBSCRIPT_START ");
     }
     if (symbols[SUBSCRIPT_END]) {
-     fprintf(stderr, "SUBSCRIPT_END ");
+     // fprintf(stderr, "SUBSCRIPT_END ");
     }
     if (symbols[STRIKE_START]) {
-     fprintf(stderr, "STRIKE_START ");
+     // fprintf(stderr, "STRIKE_START ");
     }
     if (symbols[STRIKE_END]) {
-     fprintf(stderr, "STRIKE_END ");
+     // fprintf(stderr, "STRIKE_END ");
     }
     if (symbols[BRACKET_START]) {
-     fprintf(stderr, "BRACKET_START ");
+     // fprintf(stderr, "BRACKET_START ");
     }
     if (symbols[BRACKET_END]) {
-     fprintf(stderr, "BRACKET_END ");
+     // fprintf(stderr, "BRACKET_END ");
     }
     if (symbols[LINK_START]) {
-     fprintf(stderr, "LINK_START ");
+     // fprintf(stderr, "LINK_START ");
     }
     if (symbols[LINK_END]) {
-     fprintf(stderr, "LINK_END ");
+     // fprintf(stderr, "LINK_END ");
     }
     if (symbols[CURLY_START]) {
-     fprintf(stderr, "CURLY_START ");
+     // fprintf(stderr, "CURLY_START ");
     }
     if (symbols[CURLY_END]) {
-     fprintf(stderr, "CURLY_END ");
+     // fprintf(stderr, "CURLY_END ");
     }
     if (symbols[ATTR_ID]) {
-     fprintf(stderr, "ATTR_ID ");
+     // fprintf(stderr, "ATTR_ID ");
     }
     if (symbols[ATTR_CLASS]) {
-     fprintf(stderr, "ATTR_CLASS ");
+     // fprintf(stderr, "ATTR_CLASS ");
     }
     if (symbols[ATTR_KEY]) {
-     fprintf(stderr, "ATTR_KEY ");
+     // fprintf(stderr, "ATTR_KEY ");
     }
     if (symbols[ATTR_VALUE]) {
-     fprintf(stderr, "ATTR_VALUE ");
+     // fprintf(stderr, "ATTR_VALUE ");
     }
     if (symbols[INLINE_VERBATIM]) {
-     fprintf(stderr, "INLINE_VERBATIM ");
+     // fprintf(stderr, "INLINE_VERBATIM ");
     }
     if (symbols[MATH]) {
-     fprintf(stderr, "MATH ");
+     // fprintf(stderr, "MATH ");
     }
     if (symbols[ORDERED]) {
-     fprintf(stderr, "ORDERED ");
+     // fprintf(stderr, "ORDERED ");
     }
     if (symbols[UNORDERED]) {
-     fprintf(stderr, "UNORDERED ");
+     // fprintf(stderr, "UNORDERED ");
     }
     if (symbols[LIST_START]) {
-     fprintf(stderr, "LIST_START ");
+     // fprintf(stderr, "LIST_START ");
     }
     if (symbols[LIST_ITEM_END]) {
-     fprintf(stderr, "LIST_ITEM_END ");
+     // fprintf(stderr, "LIST_ITEM_END ");
     }
     if (symbols[DIV_START]) {
-     fprintf(stderr, "DIV_START ");
+     // fprintf(stderr, "DIV_START ");
     }
     if (symbols[DIV_END]) {
-     fprintf(stderr, "DIV_END ");
+     // fprintf(stderr, "DIV_END ");
     }
     if (symbols[CODE_CHUNK_START]) {
-     fprintf(stderr, "CODE_CHUNK_START ");
+     // fprintf(stderr, "CODE_CHUNK_START ");
     }
     if (symbols[CODE_CHUNK_END]) {
-     fprintf(stderr, "CODE_CHUNK_END ");
+     // fprintf(stderr, "CODE_CHUNK_END ");
     }
     if (symbols[CODE_CHUNK_NAME]) {
-     fprintf(stderr, "CODE_CHUNK_NAME ");
+     // fprintf(stderr, "CODE_CHUNK_NAME ");
     }
     if (symbols[CODE_CHUNK_OPTIONS_START]) {
-     fprintf(stderr, "CODE_CHUNK_OPTIONS_START ");
+     // fprintf(stderr, "CODE_CHUNK_OPTIONS_START ");
     }
     if (symbols[CODE_CHUNK_OPTIONS_END]) {
-     fprintf(stderr, "CODE_CHUNK_OPTIONS_END ");
+     // fprintf(stderr, "CODE_CHUNK_OPTIONS_END ");
     }
     if (symbols[CODE_CHUNK_CONTENT]) {
-     fprintf(stderr, "CODE_CHUNK_CONTENT ");
+     // fprintf(stderr, "CODE_CHUNK_CONTENT ");
     }
     if (symbols[NO_PARSE]) {
-     fprintf(stderr, "NO_PARSE ");
+     // fprintf(stderr, "NO_PARSE ");
     }
     if (symbols[ERROR]) {
-     fprintf(stderr, "ERROR ");
+     // fprintf(stderr, "ERROR ");
     }
 
-    fprintf(stderr, "\n");
+    // fprintf(stderr, "\n");
 
 }
 
@@ -574,7 +574,7 @@ static bool pos_ge(Pos *x, Pos *y) {
 // }
 
 static void debug_pos(const Pos *pos) {
-    fprintf(stderr, "[%u, %u]", pos->row, pos->col);
+    // fprintf(stderr, "[%u, %u]", pos->row, pos->col);
 }
 
 static Pos lex_current_position(LexWrap *wrapper) {
@@ -689,15 +689,15 @@ static enum RangeType classify_range(PosRange *x, PosRange *y) {
 }
 
 static void print_parse_result(const ParseResult *res) {
-    fprintf(stderr, "ParseResult { success: %d, length: %u, range: ", res->success, res->length);
-    fprintf(stderr, "[%i, %i] - ", res->range.start.row, res->range.start.col);
-    fprintf(stderr, "[%i, %i]", res->range.end.row, res->range.end.col);
-    fprintf(stderr, ", token: %d }\n", res->token);
+    // fprintf(stderr, "ParseResult { success: %d, length: %u, range: ", res->success, res->length);
+    // fprintf(stderr, "[%i, %i] - ", res->range.start.row, res->range.start.col);
+    // fprintf(stderr, "[%i, %i]", res->range.end.row, res->range.end.col);
+    // fprintf(stderr, ", token: %d }\n", res->token);
 }
 
 static void print_stack(ParseResultArray *stack) {
     for (uint32_t i = 0; i < stack->size; i++) {
-        fprintf(stderr, "\t");
+        // fprintf(stderr, "\t");
         print_parse_result(&stack->contents[i]);
     }
 }
@@ -2186,12 +2186,12 @@ static ParseResult parse_backtick_block(LexWrap *wrapper,
     ParseResult block_content = new_parse_result(wrapper->curr_pos, wrapper->curr_pos,
         NONE, 0, false);
     while(lookahead != '\0') {
-        fprintf(stderr, "char `%c`\n", lookahead);
+        // fprintf(stderr, "char `%c`\n", lookahead);
         switch (lookahead) {
             case '`': {
                 // we must be at the same indent level
                 // as the first backtick block
-                fprintf(stderr, "within case `\n");
+                // fprintf(stderr, "within case `\n");
                 if (cur_indent != indent_match || char_ != '`') {
                     break;
                 }
@@ -2201,23 +2201,23 @@ static ParseResult parse_backtick_block(LexWrap *wrapper,
                 block_content.range.end = wrapper->curr_pos;
                 block_content.length = wrapper->pos - block_start_pos;
                 count = 0;
-                fprintf(stderr, "starting while loop (lookahead== `)\n");
+                // fprintf(stderr, "starting while loop (lookahead== `)\n");
                 while (lookahead == '`' && lookahead != '\0') {
                     lex_advance(wrapper, false);
                     lookahead = lex_lookahead(wrapper);
-                    fprintf(stderr, "new lexed ahead '%c'\n", lookahead);
+                    // fprintf(stderr, "new lexed ahead '%c'\n", lookahead);
                     count++;
                 }
-                fprintf(stderr, "finished loop\n");
+                // fprintf(stderr, "finished loop\n");
                 end.range.end = end.range.start;
                 end.range.end.col += count;
                 end.length = count;
                 // check that we have matched our first stack...
 
-                fprintf(stderr, "is an eval block %i, we counted %i and we needed %i\n", is_eval_block, count, count_match);
+                // fprintf(stderr, "is an eval block %i, we counted %i and we needed %i\n", is_eval_block, count, count_match);
                 if (count >= count_match) {
                     if (!is_eval_block || count == count_match) {
-                        fprintf(stderr, "found end token");
+                        // fprintf(stderr, "found end token");
                         // we only care that we have at least
                         // the same number of backticks as start
                         block_content.success = true;
@@ -2277,7 +2277,7 @@ static ParseResult parse_backtick_block(LexWrap *wrapper,
             }
 
         }
-        fprintf(stderr, "returning from backtick_block\n");
+        // fprintf(stderr, "returning from backtick_block\n");
         return block_content;
     }
 }
@@ -3869,10 +3869,10 @@ static void parse_new_line(ScannerState *state, LexWrap *wrapper) {
         uint32_t col = 0;
         for (int i = 1; i < state->indents.size; i++) {
             indent_ele = &state->indents.contents[i];
-            fprintf(stderr, "indent ele %i: [start: %i, mid: %i, end: %i]\n", i, indent_ele->range.start,
+            // fprintf(stderr, "indent ele %i: [start: %i, mid: %i, end: %i]\n", i, indent_ele->range.start,
                  indent_ele->mid, indent_ele->range.end);
             if (indent_ele->range.end > indent_size) {
-                fprintf(stderr, "indent_level > indent_size (%i > %i) -- creating a indent token\n", indent_ele->range.end, indent_size);
+                // fprintf(stderr, "indent_level > indent_size (%i > %i) -- creating a indent token\n", indent_ele->range.end, indent_size);
                 break;
             }
             // fprintf(stderr, "indent_level <= indent_size (%i <= %i) -- creating a indent token\n", indent_ele->range.end, indent_size);
@@ -4220,7 +4220,7 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       if (valid_symbols[EMPTY]) {
           size_t index = stack_find(&state->results, &pos, EMPTY_TOKEN, false);
           if (index < not_found) {
-              fprintf(stderr, "returing empty\n");
+              // fprintf(stderr, "returing empty\n");
               lexer->result_symbol = EMPTY;
               last_token = EMPTY;
               result = true;
