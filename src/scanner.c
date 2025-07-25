@@ -59,145 +59,195 @@ enum TokenType {
   ERROR, //General Emphasis
 };
 
+static char* debug_token_type(enum TokenType token) {
+    switch (token) {
+        case EMPTY: return "EMPTY";
+        case LINE_START: return "LINE_START";
+        case LINE_END: return "LINE_END";        // Token type for line_end
+        case INDENT: return "INDENT";
+        case DEDENT: return "DEDENT";
+        case EMPHASIS_STAR_START: return "EMPHASIS_STAR_START";  // Token type for emphasis_start
+        case EMPHASIS_STAR_END: return "EMPHASIS_STAR_END";     // Token type for emphasis_end
+        case EMPHASIS_UNDER_START: return "EMPHASIS_UNDER_START";
+        case EMPHASIS_UNDER_END: return "EMPHASIS_UNDER_END";
+        case STRONG_STAR_START: return "STRONG_STAR_START";
+        case STRONG_STAR_END: return "STRONG_STAR_END";
+        case STRONG_UNDER_START: return "STRONG_UNDER_START";
+        case STRONG_UNDER_END: return "STRONG_UNDER_END";
+        case SUPERSCRIPT_START: return "SUPERSCRIPT_START";
+        case SUPERSCRIPT_END: return "SUPERSCRIPT_END";
+        case SUBSCRIPT_START: return "SUBSCRIPT_START";
+        case SUBSCRIPT_END: return "SUBSCRIPT_END";
+        case STRIKE_START: return "STRIKE_START";
+        case STRIKE_END: return "STRIKE_END";
+        case BRACKET_START: return "BRACKET_START";
+        case BRACKET_END: return "BRACKET_END";
+        case LINK_START: return "LINK_START";
+        case LINK_END: return "LINK_END";
+        case CURLY_START: return "CURLY_START";
+        case CURLY_END: return "CURLY_END";
+        case ATTR_ID: return "ATTR_ID";
+        case ATTR_CLASS: return "ATTR_CLASS";
+        case ATTR_KEY: return "ATTR_KEY";
+        case ATTR_VALUE: return "ATTR_VALUE";
+        case INLINE_VERBATIM: return "INLINE_VERBATIM";
+        case MATH: return "MATH";
+        case ORDERED: return "ORDERED";
+        case UNORDERED: return "UNORDERED";
+        case LIST_START: return "LIST_START";
+        case LIST_ITEM_END: return "LIST_ITEM_END";
+        case DIV_START: return "DIV_START";
+        case DIV_END: return "DIV_END";
+        case CODE_CHUNK_START: return "CODE_CHUNK_START";
+        case CODE_CHUNK_END: return "CODE_CHUNK_END";
+        case CODE_CHUNK_NAME: return "CODE_CHUNK_NAME";
+        case CODE_CHUNK_OPTIONS_START: return "CODE_CHUNK_OPTIONS_START";
+        case CODE_CHUNK_OPTIONS_END: return "CODE_CHUNK_OPTIONS_END";
+        case CODE_CHUNK_CONTENT: return "CODE_CHUNK_CONTENT";
+        case NO_PARSE: return "NO_PARSE";
+        case ERROR: return "ERROR";
+    }
+}
+
 static void print_valid_symbols(const bool *symbols) {
-    //fprintf(stderr, "Valid symbols: ");
+    fprintf(stderr, "Valid symbols: ");
     if (symbols[EMPTY]) {
-        //fprintf(stderr, "EMPTY ");
+        fprintf(stderr, "EMPTY ");
     }
     if (symbols[LINE_START]) {
-     //fprintf(stderr, "LINE_START ");
+     fprintf(stderr, "LINE_START ");
     }
     if (symbols[LINE_END]) {
-     //fprintf(stderr, "LINE_END ");
+     fprintf(stderr, "LINE_END ");
     }
     if (symbols[INDENT]) {
-     //fprintf(stderr, "INDENT ");
+     fprintf(stderr, "INDENT ");
     }
     if (symbols[DEDENT]) {
-     //fprintf(stderr, "DEDENT ");
+     fprintf(stderr, "DEDENT ");
     }
     if (symbols[EMPHASIS_STAR_START]) {
-     //fprintf(stderr, "EMPHASIS_STAR_START ");
+     fprintf(stderr, "EMPHASIS_STAR_START ");
     }
     if (symbols[EMPHASIS_STAR_END]) {
-     //fprintf(stderr, "EMPHASIS_STAR_END ");
+     fprintf(stderr, "EMPHASIS_STAR_END ");
     }
     if (symbols[EMPHASIS_UNDER_START]) {
-     //fprintf(stderr, "EMPHASIS_UNDER_START ");
+     fprintf(stderr, "EMPHASIS_UNDER_START ");
     }
     if (symbols[EMPHASIS_UNDER_END]) {
-     //fprintf(stderr, "EMPHASIS_UNDER_END ");
+     fprintf(stderr, "EMPHASIS_UNDER_END ");
     }
     if (symbols[STRONG_STAR_START]) {
-     //fprintf(stderr, "STRONG_STAR_START ");
+     fprintf(stderr, "STRONG_STAR_START ");
     }
     if (symbols[STRONG_STAR_END]) {
-     //fprintf(stderr, "STRONG_STAR_END ");
+     fprintf(stderr, "STRONG_STAR_END ");
     }
     if (symbols[STRONG_UNDER_START]) {
-     //fprintf(stderr, "STRONG_UNDER_START ");
+     fprintf(stderr, "STRONG_UNDER_START ");
     }
     if (symbols[STRONG_UNDER_END]) {
-     //fprintf(stderr, "STRONG_UNDER_END ");
+     fprintf(stderr, "STRONG_UNDER_END ");
     }
     if (symbols[SUPERSCRIPT_START]) {
-     //fprintf(stderr, "SUPERSCRIPT_START ");
+     fprintf(stderr, "SUPERSCRIPT_START ");
     }
     if (symbols[SUPERSCRIPT_END]) {
-     //fprintf(stderr, "SUPERSCRIPT_END ");
+     fprintf(stderr, "SUPERSCRIPT_END ");
     }
     if (symbols[SUBSCRIPT_START]) {
-     //fprintf(stderr, "SUBSCRIPT_START ");
+     fprintf(stderr, "SUBSCRIPT_START ");
     }
     if (symbols[SUBSCRIPT_END]) {
-     //fprintf(stderr, "SUBSCRIPT_END ");
+     fprintf(stderr, "SUBSCRIPT_END ");
     }
     if (symbols[STRIKE_START]) {
-     //fprintf(stderr, "STRIKE_START ");
+     fprintf(stderr, "STRIKE_START ");
     }
     if (symbols[STRIKE_END]) {
-     //fprintf(stderr, "STRIKE_END ");
+     fprintf(stderr, "STRIKE_END ");
     }
     if (symbols[BRACKET_START]) {
-     //fprintf(stderr, "BRACKET_START ");
+     fprintf(stderr, "BRACKET_START ");
     }
     if (symbols[BRACKET_END]) {
-     //fprintf(stderr, "BRACKET_END ");
+     fprintf(stderr, "BRACKET_END ");
     }
     if (symbols[LINK_START]) {
-     //fprintf(stderr, "LINK_START ");
+     fprintf(stderr, "LINK_START ");
     }
     if (symbols[LINK_END]) {
-     //fprintf(stderr, "LINK_END ");
+     fprintf(stderr, "LINK_END ");
     }
     if (symbols[CURLY_START]) {
-     //fprintf(stderr, "CURLY_START ");
+     fprintf(stderr, "CURLY_START ");
     }
     if (symbols[CURLY_END]) {
-     //fprintf(stderr, "CURLY_END ");
+     fprintf(stderr, "CURLY_END ");
     }
     if (symbols[ATTR_ID]) {
-     //fprintf(stderr, "ATTR_ID ");
+     fprintf(stderr, "ATTR_ID ");
     }
     if (symbols[ATTR_CLASS]) {
-     //fprintf(stderr, "ATTR_CLASS ");
+     fprintf(stderr, "ATTR_CLASS ");
     }
     if (symbols[ATTR_KEY]) {
-     //fprintf(stderr, "ATTR_KEY ");
+     fprintf(stderr, "ATTR_KEY ");
     }
     if (symbols[ATTR_VALUE]) {
-     //fprintf(stderr, "ATTR_VALUE ");
+     fprintf(stderr, "ATTR_VALUE ");
     }
     if (symbols[INLINE_VERBATIM]) {
-     //fprintf(stderr, "INLINE_VERBATIM ");
+     fprintf(stderr, "INLINE_VERBATIM ");
     }
     if (symbols[MATH]) {
-     //fprintf(stderr, "MATH ");
+     fprintf(stderr, "MATH ");
     }
     if (symbols[ORDERED]) {
-     //fprintf(stderr, "ORDERED ");
+     fprintf(stderr, "ORDERED ");
     }
     if (symbols[UNORDERED]) {
-     //fprintf(stderr, "UNORDERED ");
+     fprintf(stderr, "UNORDERED ");
     }
     if (symbols[LIST_START]) {
-     //fprintf(stderr, "LIST_START ");
+     fprintf(stderr, "LIST_START ");
     }
     if (symbols[LIST_ITEM_END]) {
-     //fprintf(stderr, "LIST_ITEM_END ");
+     fprintf(stderr, "LIST_ITEM_END ");
     }
     if (symbols[DIV_START]) {
-     //fprintf(stderr, "DIV_START ");
+     fprintf(stderr, "DIV_START ");
     }
     if (symbols[DIV_END]) {
-     //fprintf(stderr, "DIV_END ");
+     fprintf(stderr, "DIV_END ");
     }
     if (symbols[CODE_CHUNK_START]) {
-     //fprintf(stderr, "CODE_CHUNK_START ");
+     fprintf(stderr, "CODE_CHUNK_START ");
     }
     if (symbols[CODE_CHUNK_END]) {
-     //fprintf(stderr, "CODE_CHUNK_END ");
+     fprintf(stderr, "CODE_CHUNK_END ");
     }
     if (symbols[CODE_CHUNK_NAME]) {
-     //fprintf(stderr, "CODE_CHUNK_NAME ");
+     fprintf(stderr, "CODE_CHUNK_NAME ");
     }
     if (symbols[CODE_CHUNK_OPTIONS_START]) {
-     //fprintf(stderr, "CODE_CHUNK_OPTIONS_START ");
+     fprintf(stderr, "CODE_CHUNK_OPTIONS_START ");
     }
     if (symbols[CODE_CHUNK_OPTIONS_END]) {
-     //fprintf(stderr, "CODE_CHUNK_OPTIONS_END ");
+     fprintf(stderr, "CODE_CHUNK_OPTIONS_END ");
     }
     if (symbols[CODE_CHUNK_CONTENT]) {
-     //fprintf(stderr, "CODE_CHUNK_CONTENT ");
+     fprintf(stderr, "CODE_CHUNK_CONTENT ");
     }
     if (symbols[NO_PARSE]) {
-     //fprintf(stderr, "NO_PARSE ");
+     fprintf(stderr, "NO_PARSE ");
     }
     if (symbols[ERROR]) {
-     //fprintf(stderr, "ERROR ");
+     fprintf(stderr, "ERROR ");
     }
 
-    //fprintf(stderr, "\n");
+    fprintf(stderr, "\n");
 
 }
 
@@ -524,7 +574,7 @@ static bool pos_ge(Pos *x, Pos *y) {
 // }
 
 static void debug_pos(const Pos *pos) {
-    //fprintf(stderr, "[%u, %u]", pos->row, pos->col);
+    fprintf(stderr, "[%u, %u]", pos->row, pos->col);
 }
 
 static Pos lex_current_position(LexWrap *wrapper) {
@@ -639,16 +689,16 @@ static enum RangeType classify_range(PosRange *x, PosRange *y) {
 }
 
 static void print_parse_result(const ParseResult *res) {
-    //fprintf(stderr, "ParseResult { success: %d, length: %u, range: ", res->success, res->length);
-    //fprintf(stderr, "[%i, %i] - ", res->range.start.row, res->range.start.col);
-    //fprintf(stderr, "[%i, %i]", res->range.end.row, res->range.end.col);
-    //fprintf(stderr, ", token: %d }\n", res->token);
+    fprintf(stderr, "ParseResult { success: %d, length: %u, range: ", res->success, res->length);
+    fprintf(stderr, "[%i, %i] - ", res->range.start.row, res->range.start.col);
+    fprintf(stderr, "[%i, %i]", res->range.end.row, res->range.end.col);
+    fprintf(stderr, ", token: %d }\n", res->token);
 }
 
 static void print_stack(ParseResultArray *stack) {
     for (uint32_t i = 0; i < stack->size; i++) {
-        //fprintf(stderr, "\t");
-        //print_parse_result(&stack->contents[i]);
+        fprintf(stderr, "\t");
+        print_parse_result(&stack->contents[i]);
     }
 }
 
@@ -2136,10 +2186,12 @@ static ParseResult parse_backtick_block(LexWrap *wrapper,
     ParseResult block_content = new_parse_result(wrapper->curr_pos, wrapper->curr_pos,
         NONE, 0, false);
     while(lookahead != '\0') {
+        fprintf(stderr, "char `%c`\n", lookahead);
         switch (lookahead) {
             case '`': {
                 // we must be at the same indent level
                 // as the first backtick block
+                fprintf(stderr, "within case `\n");
                 if (cur_indent != indent_match || char_ != '`') {
                     break;
                 }
@@ -2149,17 +2201,23 @@ static ParseResult parse_backtick_block(LexWrap *wrapper,
                 block_content.range.end = wrapper->curr_pos;
                 block_content.length = wrapper->pos - block_start_pos;
                 count = 0;
-                while (lookahead == '`') {
+                fprintf(stderr, "starting while loop (lookahead== `)\n");
+                while (lookahead == '`' && lookahead != '\0') {
                     lex_advance(wrapper, false);
                     lookahead = lex_lookahead(wrapper);
+                    fprintf(stderr, "new lexed ahead '%c'\n", lookahead);
                     count++;
                 }
+                fprintf(stderr, "finished loop\n");
                 end.range.end = end.range.start;
                 end.range.end.col += count;
                 end.length = count;
                 // check that we have matched our first stack...
+
+                fprintf(stderr, "is an eval block %i, we counted %i and we needed %i\n", is_eval_block, count, count_match);
                 if (count >= count_match) {
                     if (!is_eval_block || count == count_match) {
+                        fprintf(stderr, "found end token");
                         // we only care that we have at least
                         // the same number of backticks as start
                         block_content.success = true;
@@ -2219,6 +2277,7 @@ static ParseResult parse_backtick_block(LexWrap *wrapper,
             }
 
         }
+        fprintf(stderr, "returning from backtick_block\n");
         return block_content;
     }
 }
@@ -3775,13 +3834,13 @@ static ParseResult parse_list_item(LexWrap *wrapper, ScannerState *state) {
 /// This function should continue parsing  until it reaches a new line character.
 /// if some internal parse occurs in which we pass a new line, that is fine
 ///
-static void parse_new_line(ScannerState *state, TSLexer *lexer) {
-    //fprintf(stderr, "- calling: parse_new_line()\n");
+static void parse_new_line(ScannerState *state, LexWrap *wrapper) {
+    fprintf(stderr, "- calling: parse_new_line()\n");
     // the position of the state should ALWAYS be correct when this
     // function is called.
-    LexWrap wrapper = new_lexer(lexer, state->pos);
+    // LexWrap wrapper = new_lexer(lexer, state->pos);
     int32_t last_char = '\n'; // assume we are at the start... may not always be true
-    int32_t lookahead = lex_lookahead(&wrapper);
+    int32_t lookahead = lex_lookahead(wrapper);
     int8_t indent_size = 0;
     while(lookahead == ' ' || lookahead == '\t') {
         if (lookahead == ' ') {
@@ -3789,14 +3848,14 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
         } else {
             indent_size += 2;
         }
-        lex_advance(&wrapper, false);
-        lookahead = lex_lookahead(&wrapper);
+        lex_advance(wrapper, false);
+        lookahead = lex_lookahead(wrapper);
     }
     if (lookahead=='\n') {
         goto exit_func;
     }
 
-    bool is_list_item = possible_list_item(&wrapper);
+    bool is_list_item = possible_list_item(wrapper);
     bool had_indents = state->indents.size > 1;
     // uint8_t indent_count = 0;
     // depending on the current indent_size, the state->indents may
@@ -3806,14 +3865,14 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
         // current state indicates we may be in a list...
         // fprintf(stderr, "indents stack size is %i\n", state->indents.size);
         u8Mid *indent_ele;
-        uint32_t row = wrapper.curr_pos.row;
+        uint32_t row = wrapper->curr_pos.row;
         uint32_t col = 0;
         for (int i = 1; i < state->indents.size; i++) {
             indent_ele = &state->indents.contents[i];
-            // fprintf(stderr, "indent ele %i: [start: %i, mid: %i, end: %i]\n", i, indent_ele->range.start,
-            //      indent_ele->mid, indent_ele->range.end);
+            fprintf(stderr, "indent ele %i: [start: %i, mid: %i, end: %i]\n", i, indent_ele->range.start,
+                 indent_ele->mid, indent_ele->range.end);
             if (indent_ele->range.end > indent_size) {
-                // fprintf(stderr, "indent_level > indent_size (%i > %i) -- creating a indent token\n", indent_ele->range.end, indent_size);
+                fprintf(stderr, "indent_level > indent_size (%i > %i) -- creating a indent token\n", indent_ele->range.end, indent_size);
                 break;
             }
             // fprintf(stderr, "indent_level <= indent_size (%i <= %i) -- creating a indent token\n", indent_ele->range.end, indent_size);
@@ -3853,20 +3912,20 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
 
     if (is_list_item) {
         // indent_size should always be greater than or equal to the last element of the indents array
-        // uint32_t start = wrapper.pos;
-        is_list_item = parse_list_item(&wrapper, state).success;
+        // uint32_t start = wrapper->pos;
+        is_list_item = parse_list_item(wrapper, state).success;
     }
 
     // fprintf(stderr, "state->indents.size (%i) -- n_indents_before (%i)\n",state->indents.size, n_indents_before);
     if (state->indents.size <= n_indents_before) {
         if (n_indents_before > 1) {
             ParseResult dedent = new_parse_result(
-                new_position(wrapper.curr_pos.row, 0),
-                new_position(wrapper.curr_pos.row, 0),
+                new_position(wrapper->curr_pos.row, 0),
+                new_position(wrapper->curr_pos.row, 0),
                 DEDENT_TOKEN, 0, true);
             ParseResult list_item_end = new_parse_result(
-                new_position(wrapper.curr_pos.row, 0),
-                new_position(wrapper.curr_pos.row, 0),
+                new_position(wrapper->curr_pos.row, 0),
+                new_position(wrapper->curr_pos.row, 0),
                 LIST_ITEM_END_TOKEN, 0, true);
 
             size_t index = stack_insert_simulate(&state->results, list_item_end, 0, true);
@@ -3887,8 +3946,8 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
     } else {
         // fprintf(stderr, "inserting list start\n");
         ParseResult list_start = new_parse_result(
-            new_position(wrapper.curr_pos.row, indent_size),
-            new_position(wrapper.curr_pos.row, indent_size),
+            new_position(wrapper->curr_pos.row, indent_size),
+            new_position(wrapper->curr_pos.row, indent_size),
             LIST_START_TOKEN, 0, true);
         stack_insert(&state->results, list_start);
     }
@@ -3900,8 +3959,8 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
         // is done so that the parser knows a new paragraph or other
         // content choice is next. (in this case a list item)
         ParseResult paragraph_end = new_parse_result(
-            new_position(wrapper.curr_pos.row, 0),
-            new_position(wrapper.curr_pos.row, 0),
+            new_position(wrapper->curr_pos.row, 0),
+            new_position(wrapper->curr_pos.row, 0),
             EMPTY_TOKEN, 0, true);
         stack_insert(&state->results, paragraph_end);
 
@@ -3910,7 +3969,7 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
 
 
     // reset indent size.
-    indent_size = wrapper.curr_pos.col - array_back(&state->indents)->range.end;
+    indent_size = wrapper->curr_pos.col - array_back(&state->indents)->range.end;
     //fprintf(stderr, "before finish parsing line - new indent size after indents is %i\n", indent_size);
     // decide what to do with the first symbol
     // mostely for items that could expand into other syntatic elements
@@ -3923,7 +3982,7 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
     // - a line block
 
     // at this point we may have 5 space block content...
-    lookahead = lex_lookahead(&wrapper);
+    lookahead = lex_lookahead(wrapper);
     switch (lookahead) {
         case ' ':
         case '\t': {
@@ -3934,8 +3993,8 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
                 } else {
                     indent_size += 2;
                 }
-                lex_advance(&wrapper, false);
-                lookahead = lex_lookahead(&wrapper);
+                lex_advance(wrapper, false);
+                lookahead = lex_lookahead(wrapper);
             }
             break;
         }
@@ -3947,18 +4006,18 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
                 // this just becomes something we parse past...
                 break;
             }
-            Pos div_start = wrapper.curr_pos;
+            Pos div_start = wrapper->curr_pos;
             uint8_t colon_count = 0;
             while (lookahead == ':') {
-                lex_advance(&wrapper, false);
+                lex_advance(wrapper, false);
                 colon_count++;
-                lookahead = lex_lookahead(&wrapper);
+                lookahead = lex_lookahead(wrapper);
             }
             if (colon_count < 3) {
                 // need at least 3 colons to be a div
                 break;
             }
-            Pos div_end = wrapper.curr_pos;
+            Pos div_end = wrapper->curr_pos;
             // we have a div
             //determine if this is a start token.
             // start tokens will either have a single string of text (no spaces)
@@ -3968,14 +4027,14 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
 
             // move across whitespace
             while (lookahead == ' ' || lookahead == '\t') {
-                lex_advance(&wrapper, false);
-                lookahead = lex_lookahead(&wrapper);
+                lex_advance(wrapper, false);
+                lookahead = lex_lookahead(wrapper);
             }
             if (lookahead == '\n' || lookahead == '\0') {
                 // this is a div end token
                 ParseResult paragraph_end = new_parse_result(
-                    new_position(wrapper.curr_pos.row, 0),
-                    new_position(wrapper.curr_pos.row, 0),
+                    new_position(wrapper->curr_pos.row, 0),
+                    new_position(wrapper->curr_pos.row, 0),
                     EMPTY_TOKEN, 0, true);
                 stack_insert(&state->results, paragraph_end);
                 ParseResult div_end_ = new_parse_result(
@@ -3986,32 +4045,32 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
                 goto exit_func;
             } else {
                 // end of whitespace and not a new line...
-                uint32_t lex_pos = wrapper.pos;
+                uint32_t lex_pos = wrapper->pos;
                 bool is_curly = false;
                 if (lookahead == '{') {
                     // In the below function, the wrapper will be either at the
                     // end of the successful parse, or where
-                    is_curly = parse_curly_attr(&wrapper, &state->results).success;
+                    is_curly = parse_curly_attr(wrapper, &state->results).success;
                     if (!is_curly) {
                         // if we didn't parse a curly attr, we should
                         // reset the position to where we were before
                         // the parse.
-                        lex_set_position(&wrapper, lex_pos);
+                        lex_set_position(wrapper, lex_pos);
                     }
                 }
                 // if the above failed to parse, we may make this a legit class_attr
                 if (!is_curly) {
-                    Pos start = wrapper.curr_pos;
+                    Pos start = wrapper->curr_pos;
                     // move across the text
                     while(!(lookahead == ' ' ||  lookahead == '\t' || lookahead == '\n')) {
-                        lex_advance(&wrapper, false);
-                        lookahead = lex_lookahead(&wrapper);
+                        lex_advance(wrapper, false);
+                        lookahead = lex_lookahead(wrapper);
                     }
-                    Pos end = wrapper.curr_pos;
+                    Pos end = wrapper->curr_pos;
                     // skip over whitespace again.
                     while (lookahead == ' ' || lookahead == '\t') {
-                        lex_advance(&wrapper, false);
-                        lookahead = lex_lookahead(&wrapper);
+                        lex_advance(wrapper, false);
+                        lookahead = lex_lookahead(wrapper);
                     }
                     if (lookahead == '\n' || lookahead == '\0') {
                         // this is a div end token
@@ -4036,10 +4095,13 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
         }
         case '`': {
             // could be a code block
-            ParseResult attempt = parse_backtick_block(&wrapper, &state->results, &state->indents, '`');
+            ParseResult attempt = parse_backtick_block(wrapper, &state->results, &state->indents, '`');
             if (!attempt.success) {
                 //fprintf(stderr, "backtick_block failed");
             }
+            // this functino should probably exit..
+            lex_walk_whitespace(wrapper, &lookahead);
+            goto exit_func;
             break;
         }
         case '|': {
@@ -4055,33 +4117,36 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
         default: {}
     }
 
-    last_char = lex_lookahead(&wrapper);
+    last_char = lex_lookahead(wrapper);
+    lookahead = lex_lookahead(wrapper);
+    fprintf(stderr, "about to start loop in new_line_parse. lookahead is %c\n", lookahead);
     while(lookahead != '\0') {
+        fprintf(stderr, "char `%c`\n", lookahead);
         switch (lookahead) {
             case '\n': {
                 // fprintf(stderr, "new-line is next... ending parse_new_line()\n");
                 goto exit_func;
             }
             case '\\': {
-                lex_advance(&wrapper, false);
-                if (lex_lookahead(&wrapper) == '\n') {
+                lex_advance(wrapper, false);
+                if (lex_lookahead(wrapper) == '\n') {
                     goto exit_func;
                 }
-                lex_advance(&wrapper, false);
+                lex_advance(wrapper, false);
                 last_char = '\\';
-                lookahead = lex_lookahead(&wrapper);
+                lookahead = lex_lookahead(wrapper);
                 continue;
             }
             default: {
 
                 if (is_inline_synatx(lookahead)) {
                     // fprintf(stderr, "about to parse inline: ");
-                    // debug_pos(&wrapper.curr_pos);
+                    // debug_pos(wrapper->curr_pos);
                     // fprintf(stderr, "\nbehind: %c    lookahead: %c\n", last_char, lookahead);
-                    parse_inline(&wrapper, &state->results, last_char, &state->bracket_count);
-                    last_char = lex_lookbehind(&wrapper);
-                    lookahead = lex_lookahead(&wrapper);
-                    // debug_pos(&wrapper.curr_pos);
+                    parse_inline(wrapper, &state->results, last_char, &state->bracket_count);
+                    last_char = lex_lookbehind(wrapper);
+                    lookahead = lex_lookahead(wrapper);
+                    // debug_pos(wrapper->curr_pos);
                     // fprintf(stderr, "\n");
                     // print_parse_result(&attempt);
                     // print_stack(&state->results);
@@ -4090,18 +4155,18 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
                 }
             }
         }
-        lex_advance(&wrapper, false);
-        last_char = lex_lookahead(&wrapper);
-        Pos pos = wrapper.curr_pos;
+        lex_advance(wrapper, false);
+        last_char = lex_lookahead(wrapper);
+        Pos pos = wrapper->curr_pos;
         size_t index = stack_find(&state->results, &pos, DO_NOT_PARSE, false);
         if (index < not_found) {
             ParseResult *no_parse = &state->results.contents[index];
             for (uint32_t i = 0; i < no_parse->length; i++) {
-                lex_advance(&wrapper, false);
+                lex_advance(wrapper, false);
             }
-            last_char = lex_lookbehind(&wrapper);
+            last_char = lex_lookbehind(wrapper);
         }
-        lookahead = lex_lookahead(&wrapper);
+        lookahead = lex_lookahead(wrapper);
 
 
     }
@@ -4120,12 +4185,15 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
   ScannerState *state = (ScannerState *)payload;
   // print_scanner_state(state);
   state->pos.col = lexer->get_column(lexer);
+  LexWrap wrapper = new_lexer(lexer, state->pos);
   debug_pos(&state->pos);
   // fprintf(stderr, "  scanner invoked before: '%c' - is alpha: %i\n",
   //     lexer->lookahead == '\n' ? 'n' : lexer->lookahead, isalnum_((int)lexer->lookahead));
-  //print_valid_symbols(valid_symbols);
-  //print_stack(&state->results);
-  //fprintf(stderr, "---\n");
+  print_valid_symbols(valid_symbols);
+  print_stack(&state->results);
+  fprintf(stderr, "---\n");
+  bool result = false;
+  enum TokenType last_token = ERROR;
   if (valid_symbols[ERROR]) {
       // fprintf(stderr, "ERROR is a valid symbol. do not handle\n");
       // lexer->mark_end(lexer);
@@ -4145,38 +4213,42 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       // calling this function may reset state->new_line_count
       if (state->line_to_parse <= state->pos.row) {
           state->line_to_parse = state->pos.row + 1;
-          parse_new_line(state, lexer);
+          parse_new_line(state, &wrapper);
       }
       // if it is possible to dedent, we should do that first before returning a line_start token.
       Pos pos = new_position(state->pos.row, 0);
       if (valid_symbols[EMPTY]) {
           size_t index = stack_find(&state->results, &pos, EMPTY_TOKEN, false);
           if (index < not_found) {
-              //fprintf(stderr, "returing empty\n");
+              fprintf(stderr, "returing empty\n");
               lexer->result_symbol = EMPTY;
+              last_token = EMPTY;
+              result = true;
               array_erase(&state->results, index);
-              return true;
-          }
+              goto exit_func;
+            }
       }
       if (valid_symbols[LIST_ITEM_END] || valid_symbols[DEDENT]) {
           // these tokens are usually size 0, so matching end would likely be
           // more safe!
           size_t index = stack_find_any(&state->results, &pos, true);
           if (index < not_found) {
-              //fprintf(stderr, "found either LIST_ITEM_END or DEDENT\n");
+              fprintf(stderr, "found either LIST_ITEM_END or DEDENT\n");
               ParseResult *res = array_get(&state->results, index);
                 if (res->token == LIST_ITEM_END_TOKEN && valid_symbols[LIST_ITEM_END]) {
-                    //fprintf(stderr, "about to return LIST_ITEM_END\n");
+                    fprintf(stderr, "about to return LIST_ITEM_END\n");
                     lexer->result_symbol = LIST_ITEM_END;
-                    //print_parse_result(res);
+                    last_token = LIST_ITEM_END;
+                    result = true;
                     array_erase(&state->results, index);
-                    return true;
+                    goto exit_func;
                 } else if (res->token == DEDENT_TOKEN && valid_symbols[DEDENT]) {
-                    //fprintf(stderr, "about to return DEDENT\n");
+                    fprintf(stderr, "about to return DEDENT\n");
                     lexer->result_symbol = DEDENT;
-                    //print_parse_result(res);
+                    last_token = DEDENT;
+                    result = true;
                     array_erase(&state->results, index);
-                    return true;
+                    goto exit_func;
                 }
 
           }
@@ -4194,9 +4266,11 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       //     }
       // }
       if (valid_symbols[LINE_START]) {
-          //fprintf(stderr, "about to return LINE_START\n");
+          fprintf(stderr, "about to return LINE_START\n");
           lexer->result_symbol = LINE_START;
-          return true;
+          last_token = LINE_START;
+          result = true;
+          goto exit_func;
       }
   }
 
@@ -4213,12 +4287,13 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
     lexer->advance(lexer, false);
     lexer->result_symbol = LINE_END; // Emit the LINE_END token
     lexer->mark_end(lexer);
-    return true;
+    last_token = LINE_END;
+    result = true;
+    goto exit_func;
   }
 
-  state->pos.col = lexer->get_column(lexer);
+  // state->pos.col = lexer->get_column(lexer);
   // make the wrapper object once
-  LexWrap wrapper = new_lexer(lexer, state->pos);
   // should we consider only looking at this one position?
   // int32_t lookahead = lexer->lookahead;
 
@@ -4235,8 +4310,10 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
           }
           lexer->mark_end(lexer);
           lexer->result_symbol = NO_PARSE;
+          last_token = NO_PARSE;
+          result = true;
           array_erase(&state->results, index);
-          return true;
+          goto exit_func;
       }
 
   } else {
@@ -4244,7 +4321,8 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       size_t index = stack_find(&state->results, &wrapper.curr_pos, DO_NOT_PARSE, false);
       if (index < not_found) {
           // ParseResult *res = &state->results.contents[index];
-          return false;
+          last_token = NO_PARSE;
+          goto exit_func;
       }
   }
 
@@ -4255,8 +4333,10 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
             lex_set_position(&wrapper, wrapper.pos + res.length);
             lexer->mark_end(lexer);
             lexer->result_symbol = INDENT;
+            last_token = INDENT;
+            result = true;
             array_erase(&state->results, index);
-            return true;
+            goto exit_func;
       }
   }
 
@@ -4274,8 +4354,10 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       if (index < not_found) {
           lexer->mark_end(lexer);
           lexer->result_symbol = LIST_START;
+          last_token = LIST_START;
+          result = true;
           array_erase(&state->results, index);
-          return true;
+          goto exit_func;
       }
   }
 
@@ -4292,11 +4374,14 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
                 debug_pos(&wrapper.curr_pos);
                 if (element.token == ORDERED_LIST_ITEM) {
                     lexer->result_symbol = ORDERED;
+                    last_token = ORDERED;
                 } else {
                     lexer->result_symbol = UNORDERED;
+                    last_token = UNORDERED;
                 }
+                result = true;
                 array_erase(&state->results, index);
-                return true;
+                goto exit_func;
             }
       }
   }
@@ -4308,9 +4393,11 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
           ParseResult element = *array_get(&state->results, index);
           lex_set_position(&wrapper, wrapper.pos + element.length);
           lexer->result_symbol = INLINE_VERBATIM;
+          last_token = INLINE_VERBATIM;
+          result = true;
           lexer->mark_end(lexer);
           array_erase(&state->results, index);
-          return true;
+          goto exit_func;
       }
   }
 
@@ -4319,8 +4406,10 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       if (index < not_found) {
           lexer->mark_end(lexer);
           lexer->result_symbol = EMPTY;
+          last_token = EMPTY;
+          result = true;
           array_erase(&state->results, index);
-          return true;
+          goto exit_func;
       }
   }
 
@@ -4336,9 +4425,11 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
           if (element.token == EQ_DISPLAY || element.token == EQ_INLINE) {
               lex_set_position(&wrapper, wrapper.pos + element.length);
               lexer->result_symbol = MATH;
+              last_token = MATH;
+              result = true;
               lexer->mark_end(lexer);
               array_erase(&state->results, index);
-              return true;
+              goto exit_func;
           }
 
       }
@@ -4352,8 +4443,10 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
                 lex_set_position(&wrapper, wrapper.pos + element.length);
                 lexer->mark_end(lexer);
                 lexer->result_symbol = DIV_START;
+                last_token = DIV_START;
+                result = true;
                 array_erase(&state->results, index);
-                return true;
+                goto exit_func;
           }
       }
 
@@ -4364,8 +4457,10 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
                 lex_set_position(&wrapper, wrapper.pos + element.length);
                 lexer->mark_end(lexer);
                 lexer->result_symbol = DIV_END;
+                last_token = DIV_END;
+                result = true;
                 array_erase(&state->results, index);
-                return true;
+                goto exit_func;
           }
       }
 
@@ -4394,8 +4489,10 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
           size_t index = stack_find(&state->results, &possible_pos, EMPHASIS_STAR, true);
           if (index < not_found) {
               lexer->result_symbol = EMPHASIS_STAR_END;
+              last_token = EMPHASIS_STAR_END;
+              result = true;
               array_erase(&state->results, index);
-              return true;
+              goto exit_func;
           }
       }
 
@@ -4405,7 +4502,9 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
           size_t index = stack_find(&state->results, &possible_pos, EMPHASIS_STAR, false);
           if (index < not_found) {
               lexer->result_symbol = EMPHASIS_STAR_START;
-              return true;
+              last_token = EMPHASIS_STAR_START;
+              result = true;
+              goto exit_func;
           }
           possible_pos.col++;
       }
@@ -4419,8 +4518,10 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
                   lex_advance(&wrapper, false);
                   lexer->mark_end(lexer);
                   lexer->result_symbol = STRONG_STAR_END;
+                  last_token = STRONG_STAR_END;
+                  result = true;
                   array_erase(&state->results, index);
-                  return true;
+                  goto exit_func;
               }
           }
           if (valid_symbols[STRONG_STAR_START]) {
@@ -4431,7 +4532,9 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
                   lex_advance(&wrapper, false);
                   lexer->mark_end(lexer);
                   lexer->result_symbol = STRONG_STAR_START;
-                  return true;
+                  last_token = STRONG_STAR_START;
+                  result = true;
+                  goto exit_func;
               }
               possible_pos.col += 2;
           }
@@ -4454,7 +4557,9 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
           if (res.success) {
               if (res.token == NONE) {
                   lexer->result_symbol = ERROR;
-                  return true;
+                  last_token = ERROR;
+                  result = true;
+                  goto exit_func;
               }
               if (res.token == DO_NOT_PARSE) {
                   size_t index = stack_find_exact(&state->results, &res);
@@ -4462,14 +4567,20 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
                       array_erase(&state->results, index);
                   }
                   lexer->result_symbol = NO_PARSE;
-                  return true;
+                  last_token = NO_PARSE;
+                  result = true;
+                  goto exit_func;
               }
               if (valid_symbols[EMPHASIS_STAR_START] && res.token == EMPHASIS_STAR) {
                   lexer->result_symbol = EMPHASIS_STAR_START;
-                  return true;
+                  last_token = EMPHASIS_STAR_START;
+                  result = true;
+                  goto exit_func;
               } else if (valid_symbols[STRONG_STAR_START] && res.token == STRONG_STAR){
                   lexer->result_symbol = STRONG_STAR_START;
-                  return true;
+                  last_token = STRONG_STAR_START;
+                  result = true;
+                  goto exit_func;
               }
           }
       }
@@ -4501,8 +4612,10 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
           size_t index = stack_find(&state->results, &possible_pos, EMPHASIS_UNDER, true);
           if (index < not_found) {
               lexer->result_symbol = EMPHASIS_UNDER_END;
+              last_token = EMPHASIS_UNDER_END;
+              result = true;
               array_erase(&state->results, index);
-              return true;
+              goto exit_func;
           }
       }
 
@@ -4512,7 +4625,9 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
           size_t index = stack_find(&state->results, &possible_pos, EMPHASIS_UNDER, false);
           if (index < not_found) {
               lexer->result_symbol = EMPHASIS_UNDER_START;
-              return true;
+              last_token = EMPHASIS_UNDER_START;
+              result = true;
+              goto exit_func;
           }
           possible_pos.col++;
       }
@@ -4526,8 +4641,10 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
                   lex_advance(&wrapper, false);
                   lexer->mark_end(lexer);
                   lexer->result_symbol = STRONG_UNDER_END;
+                  last_token = STRONG_UNDER_END;
+                  result = true;
                   array_erase(&state->results, index);
-                  return true;
+                  goto exit_func;
               }
           }
           if (valid_symbols[STRONG_UNDER_START]) {
@@ -4538,7 +4655,9 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
                   lex_advance(&wrapper, false);
                   lexer->mark_end(lexer);
                   lexer->result_symbol = STRONG_UNDER_START;
-                  return true;
+                  last_token = STRONG_UNDER_START;
+                  result = true;
+                  goto exit_func;
               }
               possible_pos.col += 2;
           }
@@ -4564,7 +4683,9 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
           if (res.success) {
               if (res.token == NONE) {
                   lexer->result_symbol = ERROR;
-                  return true;
+                  last_token = ERROR;
+                  result = true;
+                  goto exit_func;
               }
               if (res.token == DO_NOT_PARSE) {
                   size_t index = stack_find_exact(&state->results, &res);
@@ -4572,14 +4693,20 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
                       array_erase(&state->results, index);
                   }
                   lexer->result_symbol = NO_PARSE;
-                  return true;
+                  last_token = NO_PARSE;
+                  result = true;
+                  goto exit_func;
               }
               if (valid_symbols[EMPHASIS_UNDER_START] && res.token == EMPHASIS_UNDER) {
                   lexer->result_symbol = EMPHASIS_UNDER_START;
-                  return true;
+                    last_token = EMPHASIS_UNDER_START;
+                    result = true;
+                    goto exit_func;
               } else if (valid_symbols[STRONG_UNDER_START] && res.token == STRONG_UNDER){
                   lexer->result_symbol = STRONG_UNDER_START;
-                  return true;
+                  last_token = STRONG_UNDER_START;
+                  result = true;
+                  goto exit_func;
               }
           }
       }
@@ -4595,8 +4722,10 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
               size_t index = stack_find(&state->results, &wrapper.curr_pos, SUPERSCRIPT, true);
               if (index < not_found) {
                   lexer->result_symbol = SUPERSCRIPT_END;
+                    last_token = SUPERSCRIPT_END;
+                    result = true;
                   array_erase(&state->results, index);
-                  return true;
+                  goto exit_func;
               }
           }
 
@@ -4605,7 +4734,9 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
               size_t index = stack_find(&state->results, &state->pos, SUPERSCRIPT, false);
               if (index < not_found) {
                   lexer->result_symbol = SUPERSCRIPT_START;
-                  return true;
+                    last_token = SUPERSCRIPT_START;
+                    result = true;
+                    goto exit_func;
               }
           }
       }
@@ -4621,8 +4752,10 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
               size_t index = stack_find(&state->results, &wrapper.curr_pos, SUBSCRIPT, true);
               if (index < not_found) {
                   lexer->result_symbol = SUBSCRIPT_END;
+                    last_token = SUBSCRIPT_END;
+                    result = true;
                   array_erase(&state->results, index);
-                  return true;
+                  goto exit_func;
               }
           }
 
@@ -4631,7 +4764,9 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
               size_t index = stack_find(&state->results, &state->pos, SUBSCRIPT, false);
               if (index < not_found) {
                   lexer->result_symbol = SUBSCRIPT_START;
-                  return true;
+                  last_token = SUBSCRIPT_START;
+                  result = true;
+                  goto exit_func;
               }
           }
 
@@ -4644,8 +4779,10 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
                   size_t index = stack_find(&state->results, &wrapper.curr_pos, STRIKETHROUGH, true);
                   if (index < not_found) {
                       lexer->result_symbol = STRIKE_END;
+                        last_token = STRIKE_END;
+                        result = true;
                       array_erase(&state->results, index);
-                      return true;
+                      goto exit_func;
                   }
               }
 
@@ -4654,7 +4791,9 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
                   size_t index = stack_find(&state->results, &state->pos, STRIKETHROUGH, false);
                   if (index < not_found) {
                       lexer->result_symbol = STRIKE_START;
-                      return true;
+                      last_token = STRIKE_START;
+                      result = true;
+                      goto exit_func;
                   }
               }
           }
@@ -4664,9 +4803,11 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       size_t index = stack_find(&state->results, &wrapper.curr_pos, BRACKET, false);
       if (index < not_found) {
           lexer->result_symbol = BRACKET_START;
+            last_token = BRACKET_START;
+            result = true;
           lex_advance(&wrapper, false);
           lexer->mark_end(lexer);
-          return true;
+          goto exit_func;
       }
   }
 
@@ -4674,9 +4815,11 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       size_t index = stack_find(&state->results, &wrapper.curr_pos, LINK, false);
       if (index < not_found) {
           lexer->result_symbol = LINK_START;
+            last_token = LINK_START;
+            result = true;
           lex_advance(&wrapper, false);
           lexer->mark_end(lexer);
-          return true;
+          goto exit_func;
       }
   }
 
@@ -4687,9 +4830,11 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       size_t index = stack_find(&state->results, &wrapper.curr_pos, CURLY_ATTR, false);
       if (index < not_found) {
           lexer->result_symbol = CURLY_START;
+          last_token = CURLY_START;
+          result = true;
           lex_advance(&wrapper, false);
           lexer->mark_end(lexer);
-          return true;
+          goto exit_func;
       }
   }
 
@@ -4699,8 +4844,10 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       size_t index = stack_find(&state->results, &wrapper.curr_pos, BRACKET, true);
       if (index < not_found) {
           lexer->result_symbol = BRACKET_END;
+            last_token = BRACKET_END;
+            result = true;
           array_erase(&state->results, index);
-          return true;
+          goto exit_func;
       }
   }
 
@@ -4710,6 +4857,8 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       size_t index = stack_find(&state->results, &wrapper.curr_pos, LINK, true);
       if (index < not_found) {
           lexer->result_symbol = LINK_END;
+            last_token = LINK_END;
+            result = true;
           array_erase(&state->results, index);
           // confirm index-- is HYPERLINK
           if (index > 0) {
@@ -4718,7 +4867,7 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
                   array_erase(&state->results, index);
               }
           }
-          return true;
+          goto exit_func;
       }
   }
 
@@ -4728,6 +4877,8 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       size_t index = stack_find(&state->results, &wrapper.curr_pos, CURLY_ATTR, true);
       if (index < not_found) {
           lexer->result_symbol = CURLY_END;
+          last_token = CURLY_END;
+          result = true;
           array_erase(&state->results, index);
           // confirm index-- is HYPERLINK
           if (index > 0) {
@@ -4736,7 +4887,7 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
                   array_erase(&state->results, index);
               }
           }
-          return true;
+          goto exit_func;
       }
   }
 
@@ -4754,40 +4905,48 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
               case ID_ATTR: {
                     if (valid_symbols[ATTR_ID]) {
                         lexer->result_symbol = ATTR_ID;
+                        last_token = ATTR_ID;
+                        result = true;
                         lex_set_position(&wrapper, wrapper.pos + element->length);
                         lexer->mark_end(lexer);
                         array_erase(&state->results, index);
-                        return true;
+                        goto exit_func;
                     }
                     break;
               }
               case CLASS_ATTR: {
                     if (valid_symbols[ATTR_CLASS]) {
                         lexer->result_symbol = ATTR_CLASS;
+                        last_token = ATTR_CLASS;
+                        result = true;
                         lex_set_position(&wrapper, wrapper.pos + element->length);
                         lexer->mark_end(lexer);
                         array_erase(&state->results, index);
-                        return true;
+                        goto exit_func;
                     }
                     break;
               }
               case KEY_ATTR: {
                     if (valid_symbols[ATTR_KEY]) {
                         lexer->result_symbol = ATTR_KEY;
+                        last_token = ATTR_KEY;
+                        result = true;
                         lex_set_position(&wrapper, wrapper.pos + element->length);
                         lexer->mark_end(lexer);
                         array_erase(&state->results, index);
-                        return true;
+                        goto exit_func;
                     }
                     break;
               }
               case VALUE_ATTR: {
                     if (valid_symbols[ATTR_VALUE]) {
                         lexer->result_symbol = ATTR_VALUE;
+                        last_token = ATTR_VALUE;
+                        result = true;
                         lex_set_position(&wrapper, wrapper.pos + element->length);
                         lexer->mark_end(lexer);
                         array_erase(&state->results, index);
-                        return true;
+                        goto exit_func;
                     }
                     break;
               }
@@ -4798,44 +4957,39 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
 
   }
 
-  if (valid_symbols[CODE_CHUNK_START] || valid_symbols[CODE_CHUNK_END]) {
-      size_t index = stack_find_any(&state->results, &wrapper.curr_pos, false);
-      if (index < not_found) {
+  if (valid_symbols[CODE_CHUNK_END]) {
+        size_t index = stack_find(&state->results, &wrapper.curr_pos, BACKQUOTE_BLOCK_END_TOKEN, false);
+        if (index < not_found) {
             ParseResult *element = array_get(&state->results, index);
-            if (element->token == BACKQUOTE_BLOCK_START_TOKEN && valid_symbols[CODE_CHUNK_START]) {
-                lexer->result_symbol = CODE_CHUNK_START;
-                lex_set_position(&wrapper, wrapper.pos + element->length);
-                lexer->mark_end(lexer);
-                array_erase(&state->results, index);
-                // if we are successful, we should also try and remove the empty token.
-                Pos empty_pos = new_position(wrapper.curr_pos.row, 0);
-                //fprintf(stderr, "trying to find empty token at: ");
-                debug_pos(&empty_pos);
-                  //fprintf(stderr, "\n");
-                index = stack_find(&state->results, &empty_pos, EMPTY_TOKEN, false);
-                if (index < not_found) {
-                    array_erase(&state->results, index);
-                }
-                return true;
-            } else if (element->token == BACKQUOTE_BLOCK_END_TOKEN && valid_symbols[CODE_CHUNK_END]) {
-                lexer->result_symbol = CODE_CHUNK_END;
-                lex_set_position(&wrapper, wrapper.pos + element->length);
-                lexer->mark_end(lexer);
-                array_erase(&state->results, index);
-                return true;
-            }
-      }
+            lexer->result_symbol = CODE_CHUNK_END;
+            last_token = CODE_CHUNK_END;
+            result = true;
+            lex_set_position(&wrapper, wrapper.pos + element->length);
+            lexer->mark_end(lexer);
+            array_erase(&state->results, index);
+            goto exit_func;
+        }
   }
 
-  if (valid_symbols[CODE_CHUNK_NAME]) {
-      size_t index = stack_find(&state->results, &wrapper.curr_pos, CHUNK_NAME_ATTR_TOKEN, false);
+  if (valid_symbols[CODE_CHUNK_START]) {
+      size_t index = stack_find(&state->results, &wrapper.curr_pos, BACKQUOTE_BLOCK_START_TOKEN, false);
       if (index < not_found) {
           ParseResult *element = array_get(&state->results, index);
-          lexer->result_symbol = CODE_CHUNK_NAME;
+          lexer->result_symbol = CODE_CHUNK_START;
+          last_token = CODE_CHUNK_START;
+          result = true;
           lex_set_position(&wrapper, wrapper.pos + element->length);
           lexer->mark_end(lexer);
           array_erase(&state->results, index);
-          return true;
+          // if we are successful, we should also try and remove the empty token.
+          Pos empty_pos = new_position(wrapper.curr_pos.row, 0);
+          //fprintf(stderr, "trying to find empty token at: ");
+            //fprintf(stderr, "\n");
+          index = stack_find(&state->results, &empty_pos, EMPTY_TOKEN, false);
+          if (index < not_found) {
+              array_erase(&state->results, index);
+          }
+          goto exit_func;
       }
   }
 
@@ -4845,9 +4999,12 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
           if (index < not_found) {
               ParseResult *element = array_get(&state->results, index);
               lexer->result_symbol = CODE_CHUNK_OPTIONS_END;
+
+              last_token = CODE_CHUNK_OPTIONS_END;
+              result = true;
               lexer->mark_end(lexer);
               array_erase(&state->results, index);
-              return true;
+              goto exit_func;
           }
       }
       if (valid_symbols[CODE_CHUNK_OPTIONS_START]) {
@@ -4855,8 +5012,10 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
           if (index < not_found) {
               ParseResult *element = array_get(&state->results, index);
               lexer->result_symbol = CODE_CHUNK_OPTIONS_START;
+              last_token = CODE_CHUNK_OPTIONS_START;
+              result = true;
               lexer->mark_end(lexer);
-              return true;
+              goto exit_func;
           }
       }
 
@@ -4867,13 +5026,19 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       if (index < not_found) {
           ParseResult *element = array_get(&state->results, index);
           lexer->result_symbol = CODE_CHUNK_CONTENT;
+          last_token = CODE_CHUNK_CONTENT;
+          result = true;
           lex_set_position(&wrapper, wrapper.pos + element->length);
           state->pos = wrapper.curr_pos;
           lexer->mark_end(lexer);
           array_erase(&state->results, index);
-          return true;
+          goto exit_func;
       }
   }
 
-  return false; // No token recognized
+  exit_func: {
+      fprintf(stderr, "last token tried (%s) was %ssuccessful\n", debug_token_type(last_token), result ? "" : "un");
+      delete_lexer(&wrapper);
+      return result;
+  }
 }
