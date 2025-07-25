@@ -1,4 +1,3 @@
-#include <setjmp.h>
 #include <stdatomic.h>
 #include <stdint.h>
 #include "tree_sitter/parser.h"
