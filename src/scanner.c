@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
+// #include <ctype.h>
 #include <stddef.h>
 
 size_t not_found = SIZE_MAX;
@@ -252,6 +252,20 @@ enum ParseToken {
 //   uint32_t row;
 //   uint32_t col;
 // } WithinRange;
+//
+
+static int isalnum_(int c) {
+    return ((c >= '0' && c <= '9') ||
+            (c >= 'A' && c <= 'Z') ||
+            (c >= 'a' && c <= 'z'));
+
+}
+
+static int isalpha_(int c) {
+    return ((c >= 'A' && c <= 'Z') ||
+            (c >= 'a' && c <= 'z'));
+
+}
 
 
 typedef Array(uint8_t) u8Array;
@@ -450,7 +464,7 @@ static void lex_walk_non_whitespace(LexWrap *wrapper, int32_t *lookahead) {
 
 // walk over alnum
 static void lex_walk_alnum(LexWrap *wrapper, int32_t *lookahead) {
-    while(isalnum(*lookahead)) {
+    while(isalnum_(*lookahead)) {
         lex_advance(wrapper, false);
         *lookahead = lex_lookahead(wrapper);
     }
@@ -458,7 +472,7 @@ static void lex_walk_alnum(LexWrap *wrapper, int32_t *lookahead) {
 
 // walk over alnum
 static void lex_walk_alpha(LexWrap *wrapper, int32_t *lookahead) {
-    while(isalpha(*lookahead)) {
+    while(isalpha_(*lookahead)) {
         lex_advance(wrapper, false);
         *lookahead = lex_lookahead(wrapper);
     }
@@ -1290,21 +1304,21 @@ static ParseResult parse_curly_attr(LexWrap *wrapper, ParseResultArray *stack) {
                     }
                     switch (item.token) {
                         case NONE: {
-                            if (!isalpha(lookahead) || lookahead == '_') {
+                            if (!isalpha_(lookahead) || lookahead == '_') {
                                 // key values cannot start with '_'
                                 goto return_res;
                             }
                             break;
                         }
                         case CLASS_ATTR: {
-                            if (!isalpha(lookahead) || lookahead == '-' || lookahead == '_') {
+                            if (!isalpha_(lookahead) || lookahead == '-' || lookahead == '_') {
                                 goto return_res;
                             }
                             break;
                         }
                         default: {}
                     }
-                } else if (!(isalnum(lookahead) || lookahead == '-' || lookahead == '_')) {
+                } else if (!(isalnum_(lookahead) || lookahead == '-' || lookahead == '_')) {
                     goto return_res;
                 }
                 if (item.token == NONE || item.token == EMPTY_TOKEN) {
@@ -1580,21 +1594,21 @@ static ParseResult parse_curly_attr_special(LexWrap *wrapper, ParseResultArray *
                 //     }
                 //     switch (item.token) {
                 //         case NONE: {
-                //             if (!isalpha(lookahead) || lookahead == '_') {
+                //             if (!isalpha_(lookahead) || lookahead == '_') {
                 //                 // key values cannot start with '_'
                 //                 goto return_res;
                 //             }
                 //             break;
                 //         }
                 //         case CLASS_ATTR: {
-                //             if (!isalpha(lookahead) || lookahead == '-' || lookahead == '_') {
+                //             if (!isalpha_(lookahead) || lookahead == '-' || lookahead == '_') {
                 //                 goto return_res;
                 //             }
                 //             break;
                 //         }
                 //         default: {}
                 //     }
-                // } else if (!(isalnum(lookahead) || lookahead == '-' || lookahead == '_')) {
+                // } else if (!(isalnum_(lookahead) || lookahead == '-' || lookahead == '_')) {
                 //     goto return_res;
                 // }
                 if (item.token == NONE || item.token == EMPTY_TOKEN) {
@@ -2686,11 +2700,11 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
                             case 1: {
                                 // do we need to check that the next character
                                 // is syntax???
-                                if (!isalpha(next_char)) {
+                                if (!isalpha_(next_char)) {
                                     // if the next character is NOT alphabet
                                     // then we can complete this case
                                     res.success = true;
-                                } else if (!isalpha(last_char)) {
+                                } else if (!isalpha_(last_char)) {
                                     // we know the next character IS alphabet,
                                     // which automatically invalidates the current
                                     // scope
@@ -2756,7 +2770,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
                                 continue;
                             }
                             case 3: {
-                                if (!isalpha(next_char)) {
+                                if (!isalpha_(next_char)) {
                                     res.success = true;
                                     dont_parse_next_n(wrapper, stack, 1);
                                 } else {
@@ -2793,7 +2807,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
                                 res.range.end = wrapper->curr_pos;
                                 res.length = last_lex_pos - buffer_start_pos;
 
-                                if (!isalpha(last_char) && isalpha(next_char)) {
+                                if (!isalpha_(last_char) && isalpha_(next_char)) {
 
                                     ParseResult attempt = parse_under(wrapper, stack, last_char, bracket_count);
                                     if (!attempt.success) {
@@ -2828,12 +2842,12 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
                                 res.range.end = wrapper->curr_pos;
                                 // do we need to check that the next character
                                 // is syntax???
-                                if (!isalpha(next_char)) {
+                                if (!isalpha_(next_char)) {
                                     // if the next character is NOT alphabet
                                     // then we can complete this case
                                     res.success = true;
                                     break;
-                                } else if (!isalpha(last_char)) {
+                                } else if (!isalpha_(last_char)) {
                                     // we know the next character IS alphabet,
                                     // which automatically invalidates the current
                                     // scope
@@ -2870,7 +2884,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
                                 // if the next character is not an alphabet
                                 // then we know that the inner set is an
                                 // emphasis.
-                                if (!isalpha(next_char)) {
+                                if (!isalpha_(next_char)) {
                                     ParseResult inner = empty_parse_result();
                                     inner.range.end = wrapper->curr_pos;
                                     inner.range.start = res.range.start;
@@ -2883,7 +2897,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
                                         char_count--;
                                     }
                                     lookahead = next_char;
-                                } else if (!isalpha(last_char)) {
+                                } else if (!isalpha_(last_char)) {
                                     // we know the next character IS alphabet,
                                     // unlike where we have 1 leading _,
                                     // this may not be invalidated immediately
@@ -2908,7 +2922,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
                                 // inner syntax is an strong and outer is
                                 // likely a emph.
                                 // create new result to insert
-                                if (!isalpha(next_char)) {
+                                if (!isalpha_(next_char)) {
                                     ParseResult inner = empty_parse_result();
                                     inner.range.end = wrapper->curr_pos;
                                     inner.range.start = res.range.start;
@@ -2944,7 +2958,7 @@ static ParseResult parse_under(LexWrap *wrapper, ParseResultArray* stack, int32_
                                 continue;
                             }
                             case 3: {
-                                if (!isalpha(next_char)) {
+                                if (!isalpha_(next_char)) {
                                     // complete match
                                     lex_backtrack_n(wrapper, end_char_count - 3);
                                     res.token = STRONG_UNDER;
@@ -4108,7 +4122,7 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
   state->pos.col = lexer->get_column(lexer);
   debug_pos(&state->pos);
   // fprintf(stderr, "  scanner invoked before: '%c' - is alpha: %i\n",
-  //     lexer->lookahead == '\n' ? 'n' : lexer->lookahead, isalnum((int)lexer->lookahead));
+  //     lexer->lookahead == '\n' ? 'n' : lexer->lookahead, isalnum_((int)lexer->lookahead));
   //print_valid_symbols(valid_symbols);
   //print_stack(&state->results);
   //fprintf(stderr, "---\n");
