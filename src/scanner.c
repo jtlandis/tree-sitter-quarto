@@ -1460,6 +1460,7 @@ static ParseResult parse_curly_attr_special(LexWrap *wrapper, ParseResultArray *
     // note this could be options...
     bool has_whitespace = false;
     bool has_equal = false;
+    bool while_skipped = false;
     buffer_item_pos = wrapper->pos;
     item.range.start = wrapper->curr_pos;
     while (lookahead != '}' && lookahead != ',') {
@@ -1483,6 +1484,10 @@ static ParseResult parse_curly_attr_special(LexWrap *wrapper, ParseResultArray *
             default:
                 break;
         }
+        if (lookahead == '\0' || lookahead == '\n') {
+            while_skipped = true;
+            goto return_res;
+        }
         lex_advance(wrapper, false);
         lookahead = lex_lookahead(wrapper);
     }
@@ -1490,6 +1495,9 @@ static ParseResult parse_curly_attr_special(LexWrap *wrapper, ParseResultArray *
     item.range.end = wrapper->curr_pos;
     item.length = wrapper->pos - buffer_item_pos;
     item.success = true;
+    if (while_skipped) {
+        goto return_res;
+    }
     if (!has_equal) {
         // this is a name for the chunk
         // lookahead is '}' or ','
@@ -2053,11 +2061,11 @@ static ParseResult parse_backtick_block(LexWrap *wrapper,
     }
     if (is_eval_block) {
         // this has a special curly attr block...
-        //fprintf(stderr, "we think its an eval block\n");
+        // fprintf(stderr, "we think its an eval block\n");
         uint32_t buffer_start_pos = wrapper->pos;
         ParseResult attempt = parse_curly_attr_special(wrapper, stack);
         if (!attempt.success) {
-            //fprintf(stderr, "we failed, going to try again\n");
+            // fprintf(stderr, "we failed, going to try again\n");
             is_eval_block = false;
             lex_set_position(wrapper, buffer_start_pos);
             size_t no_parse_index = stack_find(stack, &wrapper->curr_pos, DO_NOT_PARSE, false);
@@ -2067,6 +2075,7 @@ static ParseResult parse_backtick_block(LexWrap *wrapper,
             attempt = parse_curly_attr(wrapper, stack);
             if (!attempt.success) {
                 // we cannot parse this block as a backtick block.
+                // fprintf(stderr, "we failed again\n");
                 goto return_res;
             }
             lookahead = lex_lookahead(wrapper);
