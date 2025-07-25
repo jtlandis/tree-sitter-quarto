@@ -110,14 +110,14 @@ static char* debug_token_type(enum TokenType token) {
 }
 
 static void print_valid_symbols(const bool *symbols) {
-    fprintf(stderr, "Valid symbols: ");
+    // fprintf(stderr, "Valid symbols: ");
     for (int i = 0; i < ERROR; i++) {
         enum TokenType token = (enum TokenType)i;
         if (symbols[token]) {
-            fprintf(stderr, "%s ", debug_token_type(token));
+            // fprintf(stderr, "%s ", debug_token_type(token));
         }
     }
-    fprintf(stderr, "\n");
+    // fprintf(stderr, "\n");
 }
 
 enum ParseToken {
@@ -482,7 +482,7 @@ static bool pos_ge(Pos *x, Pos *y) {
 // }
 
 static void debug_pos(const Pos *pos) {
-    fprintf(stderr, "[%u, %u]", pos->row, pos->col);
+    // fprintf(stderr, "[%u, %u]", pos->row, pos->col);
 }
 
 static Pos lex_current_position(LexWrap *wrapper) {
@@ -597,15 +597,15 @@ static enum RangeType classify_range(PosRange *x, PosRange *y) {
 }
 
 static void print_parse_result(const ParseResult *res) {
-    fprintf(stderr, "ParseResult { success: %d, length: %u, range: ", res->success, res->length);
-    fprintf(stderr, "[%i, %i] - ", res->range.start.row, res->range.start.col);
-    fprintf(stderr, "[%i, %i]", res->range.end.row, res->range.end.col);
-    fprintf(stderr, ", token: %s }\n", debug_parse_token(res->token));
+    // fprintf(stderr, "ParseResult { success: %d, length: %u, range: ", res->success, res->length);
+    // fprintf(stderr, "[%i, %i] - ", res->range.start.row, res->range.start.col);
+    // fprintf(stderr, "[%i, %i]", res->range.end.row, res->range.end.col);
+    // fprintf(stderr, ", token: %s }\n", debug_parse_token(res->token));
 }
 
 static void print_stack(ParseResultArray *stack) {
     for (uint32_t i = 0; i < stack->size; i++) {
-        fprintf(stderr, "\t");
+        // fprintf(stderr, "\t");
         print_parse_result(&stack->contents[i]);
     }
 }
@@ -1973,11 +1973,11 @@ static ParseResult parse_backtick_block(LexWrap *wrapper,
     }
     if (is_eval_block) {
         // this has a special curly attr block...
-        fprintf(stderr, "we think its an eval block\n");
+        // fprintf(stderr, "we think its an eval block\n");
         uint32_t buffer_start_pos = wrapper->pos;
         ParseResult attempt = parse_curly_attr_special(wrapper, stack);
         if (!attempt.success) {
-            fprintf(stderr, "we failed, going to try again\n");
+            // fprintf(stderr, "we failed, going to try again\n");
             is_eval_block = false;
             lex_set_position(wrapper, buffer_start_pos);
             size_t no_parse_index = stack_find(stack, &wrapper->curr_pos, DO_NOT_PARSE, false);
@@ -1987,7 +1987,7 @@ static ParseResult parse_backtick_block(LexWrap *wrapper,
             attempt = parse_curly_attr(wrapper, stack);
             if (!attempt.success) {
                 // we cannot parse this block as a backtick block.
-                fprintf(stderr, "we failed again\n");
+                // fprintf(stderr, "we failed again\n");
                 goto return_res;
             }
             lookahead = lex_lookahead(wrapper);
@@ -4123,7 +4123,7 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
   //     lexer->lookahead == '\n' ? 'n' : lexer->lookahead, isalnum_((int)lexer->lookahead));
   print_valid_symbols(valid_symbols);
   print_stack(&state->results);
-  fprintf(stderr, "---\n");
+  // fprintf(stderr, "---\n");
   bool result = false;
   enum TokenType last_token = ERROR;
   if (valid_symbols[ERROR]) {
@@ -4978,7 +4978,7 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
   }
 
   exit_func: {
-      fprintf(stderr, "last token tried (%s) was %ssuccessful\n", debug_token_type(last_token), result ? "" : "un");
+      // fprintf(stderr, "last token tried (%s) was %ssuccessful\n", debug_token_type(last_token), result ? "" : "un");
       delete_lexer(&wrapper);
       return result;
   }
