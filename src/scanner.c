@@ -3870,7 +3870,7 @@ static void parse_new_line(ScannerState *state, LexWrap *wrapper) {
         for (int i = 1; i < state->indents.size; i++) {
             indent_ele = &state->indents.contents[i];
             // fprintf(stderr, "indent ele %i: [start: %i, mid: %i, end: %i]\n", i, indent_ele->range.start,
-                 indent_ele->mid, indent_ele->range.end);
+                 // indent_ele->mid, indent_ele->range.end);
             if (indent_ele->range.end > indent_size) {
                 // fprintf(stderr, "indent_level > indent_size (%i > %i) -- creating a indent token\n", indent_ele->range.end, indent_size);
                 break;
