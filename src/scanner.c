@@ -3835,7 +3835,7 @@ static ParseResult parse_list_item(LexWrap *wrapper, ScannerState *state) {
 /// if some internal parse occurs in which we pass a new line, that is fine
 ///
 static void parse_new_line(ScannerState *state, LexWrap *wrapper) {
-    fprintf(stderr, "- calling: parse_new_line()\n");
+    // fprintf(stderr, "- calling: parse_new_line()\n");
     // the position of the state should ALWAYS be correct when this
     // function is called.
     // LexWrap wrapper = new_lexer(lexer, state->pos);
@@ -4119,9 +4119,9 @@ static void parse_new_line(ScannerState *state, LexWrap *wrapper) {
 
     last_char = lex_lookahead(wrapper);
     lookahead = lex_lookahead(wrapper);
-    fprintf(stderr, "about to start loop in new_line_parse. lookahead is %c\n", lookahead);
+    // fprintf(stderr, "about to start loop in new_line_parse. lookahead is %c\n", lookahead);
     while(lookahead != '\0') {
-        fprintf(stderr, "char `%c`\n", lookahead);
+        // fprintf(stderr, "char `%c`\n", lookahead);
         switch (lookahead) {
             case '\n': {
                 // fprintf(stderr, "new-line is next... ending parse_new_line()\n");
@@ -4186,12 +4186,12 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
   // print_scanner_state(state);
   state->pos.col = lexer->get_column(lexer);
   LexWrap wrapper = new_lexer(lexer, state->pos);
-  debug_pos(&state->pos);
+  // debug_pos(&state->pos);
   // fprintf(stderr, "  scanner invoked before: '%c' - is alpha: %i\n",
   //     lexer->lookahead == '\n' ? 'n' : lexer->lookahead, isalnum_((int)lexer->lookahead));
-  print_valid_symbols(valid_symbols);
-  print_stack(&state->results);
-  fprintf(stderr, "---\n");
+  // print_valid_symbols(valid_symbols);
+  // print_stack(&state->results);
+  // fprintf(stderr, "---\n");
   bool result = false;
   enum TokenType last_token = ERROR;
   if (valid_symbols[ERROR]) {
@@ -4233,17 +4233,17 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
           // more safe!
           size_t index = stack_find_any(&state->results, &pos, true);
           if (index < not_found) {
-              fprintf(stderr, "found either LIST_ITEM_END or DEDENT\n");
+              // fprintf(stderr, "found either LIST_ITEM_END or DEDENT\n");
               ParseResult *res = array_get(&state->results, index);
                 if (res->token == LIST_ITEM_END_TOKEN && valid_symbols[LIST_ITEM_END]) {
-                    fprintf(stderr, "about to return LIST_ITEM_END\n");
+                    // fprintf(stderr, "about to return LIST_ITEM_END\n");
                     lexer->result_symbol = LIST_ITEM_END;
                     last_token = LIST_ITEM_END;
                     result = true;
                     array_erase(&state->results, index);
                     goto exit_func;
                 } else if (res->token == DEDENT_TOKEN && valid_symbols[DEDENT]) {
-                    fprintf(stderr, "about to return DEDENT\n");
+                    // fprintf(stderr, "about to return DEDENT\n");
                     lexer->result_symbol = DEDENT;
                     last_token = DEDENT;
                     result = true;
@@ -4266,7 +4266,7 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
       //     }
       // }
       if (valid_symbols[LINE_START]) {
-          fprintf(stderr, "about to return LINE_START\n");
+          // fprintf(stderr, "about to return LINE_START\n");
           lexer->result_symbol = LINE_START;
           last_token = LINE_START;
           result = true;
@@ -5037,7 +5037,7 @@ bool tree_sitter_quarto_external_scanner_scan(void *payload, TSLexer *lexer, con
   }
 
   exit_func: {
-      fprintf(stderr, "last token tried (%s) was %ssuccessful\n", debug_token_type(last_token), result ? "" : "un");
+      // fprintf(stderr, "last token tried (%s) was %ssuccessful\n", debug_token_type(last_token), result ? "" : "un");
       delete_lexer(&wrapper);
       return result;
   }
