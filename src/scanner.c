@@ -3791,19 +3791,24 @@ static void parse_new_line(ScannerState *state, TSLexer *lexer) {
     uint8_t potential_dedent = 0;
     if (state->indents.size > 1) {
         // current state indicates we may be in a list...
+        // fprintf(stderr, "indents stack size is %i\n", state->indents.size);
         u8Mid *indent_ele;
         uint32_t row = wrapper.curr_pos.row;
         uint32_t col = 0;
         for (int i = 1; i < state->indents.size; i++) {
             indent_ele = &state->indents.contents[i];
-            if (indent_ele->range.end >= indent_size) {
+            // fprintf(stderr, "indent ele %i: [start: %i, mid: %i, end: %i]\n", i, indent_ele->range.start,
+            //      indent_ele->mid, indent_ele->range.end);
+            if (indent_ele->range.end > indent_size) {
+                // fprintf(stderr, "indent_level > indent_size (%i > %i) -- creating a indent token\n", indent_ele->range.end, indent_size);
                 break;
             }
-            // fprintf(stderr, "indent_level < indent_size (%i < %i) -- creating a indent token\n", indent_ele->range.end, indent_size);
+            // fprintf(stderr, "indent_level <= indent_size (%i <= %i) -- creating a indent token\n", indent_ele->range.end, indent_size);
             ParseResult indent = new_parse_result(
                 new_position(row, col),
-                new_position(row, col + indent_ele->range.end),
+                new_position(row, indent_ele->range.end),
                 INDENT_TOKEN, indent_ele->range.end - col, true);
+            // print_parse_result(&indent);
             col += indent_ele->range.end;
             stack_insert(&state->results, indent);
             // indent_count++;
